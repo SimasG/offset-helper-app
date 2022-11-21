@@ -19,7 +19,7 @@ contract OffsetHelperStorage is OwnableUpgradeable {
     address public contractRegistryAddress =
         0x263fA1c180889b3a3f46330F32a4a23287E99FC9;
 
-    // ** What does `sushiRouterAddress` do?
+    // ** What does `sushiRouterAddress` do? Token swaps?
     address public sushiRouterAddress =
         0x1b02dA8Cb0d097eB8D57A175b88c7D8b47997506;
 
