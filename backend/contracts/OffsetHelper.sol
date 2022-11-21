@@ -186,7 +186,7 @@ contract OffsetHelper is OffsetHelperStorage {
     /* `autoOffsetExactOutToken` helper functions */
     /* ------------------------------------------ */
 
-    /* `swapExactOutToken` helper functions */
+    /* 1.1 `swapExactOutToken` */
 
     /**
      * @notice Swap eligible ERC20 tokens for Toucan pool tokens (BCT/NCT) on SushiSwap
@@ -240,6 +240,8 @@ contract OffsetHelper is OffsetHelperStorage {
         balances[msg.sender][_toToken] += _toAmount;
     }
 
+    /* `swapExactOutToken` helper functions */
+
     // ** Why not `private`?
     function calculateExactOutSwap(
         address _fromToken,
@@ -283,7 +285,7 @@ contract OffsetHelper is OffsetHelperStorage {
         return IUniswapV2Router02(sushiRouterAddress);
     }
 
-    /* `autoRedeem` helper functions */
+    /* 1.2 `autoRedeem` */
     /**
      * @notice Redeems the specified amount of NCT / BCT for TCO2.
      * @dev Needs to be approved on the client side
@@ -292,4 +294,264 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
+    // ** Why `public`? Isn't `autoRedeem` only callable within other public
+    // ** functions and hence have no reason to be public?
+    function autoRedeem(address _fromToken, uint256 _amount)
+        public
+        onlyRedeemable(_fromToken)
+        returns (
+            // ** So we don't need to explicitly return values if we add `returns` here?
+            address[] memory tco2s,
+            uint256[] memory amounts
+        )
+    {
+        require(
+            balances[msg.sender][_fromToken] >= _amount,
+            "Insufficient NCT/BCT balance"
+        );
+
+        // instantiate pool token (NCT or BCT)
+        IToucanPoolToken PoolTokenImplementation = IToucanPoolToken(_fromToken);
+
+        // auto redeem pool token for TCO2; will transfer
+        // automatically picked TCO2 to this contract
+        (tco2s, amounts) = PoolTokenImplementation.redeemAuto2(_amount);
+
+        // update balances
+        balances[msg.sender][_fromToken] -= _amount;
+        uint256 tco2sLen = tco2s.length;
+        for (uint256 i = 0; i < tco2sLen; i++) {
+            balances[msg.sender][tco2s[i]] += amounts[i];
+        }
+
+        emit Redeemed(msg.sender, _fromToken, tco2s, amounts);
+    }
+
+    /* 1.3 `autoRetire` */
+    /**
+     * @notice Retire the specified TCO2 tokens.
+     * @param _tco2s The addresses of the TCO2s to retire
+     * @param _amounts The amounts to retire from each of the corresponding
+     * TCO2 addresses
+     */
+    // ** Why `public`? Isn't `autoRetire` only callable within other public
+    // ** functions and hence have no reason to be public?
+    function autoRetire(address[] memory _tco2s, uint256[] memory _amounts)
+        public
+    {
+        uint256 tco2sLen = _tco2s.length;
+        require(tco2sLen != 0, "Array empty");
+        require(tco2sLen == _amounts.length, "Arrays unequal");
+
+        uint256 i = 0;
+        while (i < tco2sLen) {
+            require(
+                balances[msg.sender][_tco2s[i]] >= _amounts[i],
+                "Insufficient TCO2 balance"
+            );
+
+            balances[msg.sender][_tco2s[i]] -= _amounts[i];
+
+            IToucanCarbonOffsets(_tco2s[i]).retire(_amounts[i]);
+
+            unchecked {
+                i++;
+            }
+        }
+    }
+
+    /**
+     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * tokens available from the specified Toucan token pool by sending ERC20
+     * tokens (USDC, WETH, WMATIC). All provided token is consumed for
+     * offsetting.
+     *
+     * This function:
+     * 1. Swaps the ERC20 token sent to the contract for the specified pool token.
+     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 3. Retires the TCO2 tokens.
+     *
+     * Note: The client must approve the ERC20 token that is sent to the contract.
+     *
+     * @dev When automatically redeeming pool tokens for the lowest quality
+     * TCO2s there are no fees and you receive exactly 1 TCO2 token for 1 pool
+     * token.
+     *
+     * @param _fromToken The address of the ERC20 token that the user sends
+     * (must be one of USDC, WETH, WMATIC)
+     * @param _amountToSwap The amount of ERC20 token to swap into Toucan pool
+     * token. Full amount will be used for offsetting.
+     * @param _poolToken The address of the Toucan pool token that the
+     * user wants to use, for example, NCT or BCT
+     *
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+    function autoOffsetExactInToken(
+        address _fromToken,
+        uint256 _amountToSwap,
+        address _poolToken
+    ) public returns (address[] memory tco2s, uint256[] memory amounts) {
+        // swap input token for BCT / NCT
+        uint256 amountToOffset = swapExactInToken(
+            _fromToken,
+            _amountToSwap,
+            _poolToken
+        );
+
+        // redeem BCT / NCT for TCO2s
+        (tco2s, amounts) = autoRedeem(_fromToken, amountToOffset);
+
+        // retire the TCO2s to achieve offset
+        autoRetire(tco2s, amounts);
+    }
+
+    /* ------------------------------------------ */
+    /* `autoOffsetExactInToken` helper functions */
+    /* ------------------------------------------ */
+
+    // ** Why `public`?
+    // I'd change `_fromAmount` & `_toToken` names for consistency
+    // E.g. `_fromAmount` -> `_amountToSwap` & `_toToken` -> `_poolToken`
+    function swapExactInToken(
+        address _fromToken,
+        uint256 _fromAmount,
+        address _toToken
+    )
+        public
+        onlySwappable(_fromToken)
+        onlyRedeemable(_toToken)
+        returns (uint256)
+    {
+        // calculate path & amounts
+        address[] memory path = generatePath(_fromToken, _toToken);
+        uint256 len = path.length;
+
+        // transfer tokens
+        IERC20(_fromToken).safeTransferFrom(
+            msg.sender,
+            address(this),
+            _fromAmount
+        );
+
+        // approve router
+        // ** Why are we using `safeApprove` here if we used `approve` in `swapExactOutToken`?
+        IERC20(_fromToken).safeApprove(sushiRouterAddress, _fromAmount);
+
+        // swap
+        uint256[] memory amounts = routerSushi().swapExactTokensForTokens(
+            _fromAmount,
+            // ** Why 0?
+            0,
+            path,
+            address(this),
+            block.timestamp
+        );
+        uint256 amountOut = amounts[len - 1];
+
+        // update balances
+        balances[msg.sender][_toToken] += amountOut;
+
+        return amountOut;
+    }
+
+    /**
+     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * tokens available from the specified Toucan token pool by sending MATIC.
+     * Use `calculateNeededETHAmount()` first in order to find out how much
+     * MATIC is required to retire the specified quantity of TCO2.
+     *
+     * This function:
+     * 1. Swaps the Matic sent to the contract for the specified pool token.
+     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 3. Retires the TCO2 tokens.
+     *
+     * @dev If the user sends (too) much MATIC, the leftover amount will be sent back
+     * to the user.
+     *
+     * @param _poolToken The address of the Toucan pool token that the
+     * user wants to use, for example, NCT or BCT.
+     * @param _amountToOffset The amount of TCO2 to offset.
+     *
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+    // ** Why is it `payable`?
+    function autoOffsetExactOutETH(address _poolToken, uint256 _amountToOffset)
+        public
+        payable
+        returns (address[] memory tco2s, uint256[] memory amounts)
+    {
+        // swap MATIC for BCT / NCT
+        swapExactOutETH(_poolToken, _amountToOffset);
+
+        // redeem BCT / NCT for TCO2s
+        (tco2s, amounts) = autoRedeem(_poolToken, _amountToOffset);
+
+        // retire the TCO2s to achieve offset
+        autoRetire(tco2s, amounts);
+    }
+
+    /* ------------------------------------------ */
+    /* `autoOffsetExactOutETH` helper functions */
+    /* ------------------------------------------ */
+
+    /**
+     * @notice Swap MATIC for Toucan pool tokens (BCT/NCT) on SushiSwap.
+     * Remaining MATIC that was not consumed by the swap is returned.
+     * @param _toToken Token to swap for (will be held within contract)
+     * @param _toAmount Amount of NCT / BCT wanted
+     */
+    // ** Why `public` & `payable`?
+    function swapExactOutETH(address _toToken, uint256 _toAmount)
+        public
+        payable
+        onlyRedeemable(_toToken)
+    {
+        // calculate path & amounts
+        address fromToken = eligibleTokenAddresses["WMATIC"];
+        address[] memory path = generatePath(fromToken, _toToken);
+
+        // swap
+        // ** `swapETHForExactTokens()` -> very confusing name since we're swapping (W)MATIC
+        // ** Why are we explictly sending funds to this contract now but not in other swaps?
+        uint256[] memory amounts = routerSushi().swapETHForExactTokens{
+            value: msg.value
+        }(_toAmount, path, address(this), block.timestamp);
+
+        // send surplus back
+        if (msg.value > amounts[0]) {
+            uint256 leftoverETH = msg.value - amounts[0];
+            // ** What does `new bytes(0)` mean?
+            (bool success, ) = msg.sender.call{value: leftoverETH}(
+                new bytes(0)
+            );
+
+            require(success, "Failed to send surplus back");
+        }
+
+        // update balances
+        balances[msg.sender][_toToken] += _toAmount;
+    }
+
+    /**
+     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * tokens available from the specified Toucan token pool by sending MATIC.
+     * All provided MATIC is consumed for offsetting.
+     *
+     * This function:
+     * 1. Swaps the Matic sent to the contract for the specified pool token.
+     * 2. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 3. Retires the TCO2 tokens.
+     *
+     * @param _poolToken The address of the Toucan pool token that the
+     * user wants to use, for example, NCT or BCT.
+     *
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+    function autoOffsetExactInETH(address _poolToken)
+        public
+        returns (address[] memory tco2s, uint256[] memory amounts)
+    {}
 }
