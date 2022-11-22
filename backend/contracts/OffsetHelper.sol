@@ -502,7 +502,6 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _toToken Token to swap for (will be held within contract)
      * @param _toAmount Amount of NCT / BCT wanted
      */
-    // ** Why `public` & `payable`?
     function swapExactOutETH(address _toToken, uint256 _toAmount)
         public
         payable
@@ -552,6 +551,294 @@ contract OffsetHelper is OffsetHelperStorage {
      */
     function autoOffsetExactInETH(address _poolToken)
         public
+        payable
         returns (address[] memory tco2s, uint256[] memory amounts)
-    {}
+    {
+        // swap MATIC for BCT / NCT
+        uint256 amountToOffset = swapExactInETH(_poolToken);
+
+        // redeem BCT / NCT for TCO2s
+        (tco2s, amounts) = autoRedeem(_poolToken, amountToOffset);
+
+        // retire the TCO2s to achieve offset
+        autoRetire(tco2s, amounts);
+    }
+
+    /* ------------------------------------------ */
+    /* `autoOffsetExactInETH` helper functions */
+    /* ------------------------------------------ */
+    // ** Why `public`?
+    function swapExactInETH(address _toToken)
+        public
+        payable
+        onlyRedeemable(_toToken)
+        returns (uint256)
+    {
+        // calculate path & amounts
+        address fromToken = eligibleTokenAddresses["WMATIC"];
+        address[] memory path = generatePath(fromToken, _toToken);
+
+        // swap
+        uint256[] memory amounts = routerSushi().swapExactETHForTokens{
+            value: msg.value
+        }(0, path, address(this), block.timestamp);
+
+        // ** I guess I could also add a sanity check here:
+        // ** require(path.length == amounts.length, "Unequal arrays");
+        uint256 amountOut = amounts[path.length - 1];
+
+        // update balances
+        balances[msg.sender][_toToken] += amountOut;
+
+        return amountOut;
+    }
+
+    /**
+     * @notice Retire carbon credits using the lowest quality (oldest) TCO2
+     * tokens available by sending Toucan pool tokens, for example, BCT or NCT.
+     *
+     * This function:
+     * 1. Redeems the pool token for the poorest quality TCO2 tokens available.
+     * 2. Retires the TCO2 tokens.
+     *
+     * Note: The client must approve the pool token that is sent.
+     *
+     * @param _poolToken The address of the Toucan pool token that the
+     * user wants to use, for example, NCT or BCT.
+     * @param _amountToOffset The amount of TCO2 to offset.
+     *
+     * @return tco2s An array of the TCO2 addresses that were redeemed
+     * @return amounts An array of the amounts of each TCO2 that were redeemed
+     */
+    function autoOffsetPoolToken(address _poolToken, uint256 _amountToOffset)
+        public
+        returns (address[] memory tco2s, uint256[] memory amounts)
+    {
+        // deposit pool token from user to this contract
+        deposit(_poolToken, _amountToOffset);
+
+        // redeem BCT / NCT for TCO2s
+        (tco2s, amounts) = autoRedeem(_poolToken, _amountToOffset);
+
+        // retire the TCO2s to achieve offset
+        autoRetire(tco2s, amounts);
+    }
+
+    /* ------------------------------------------ */
+    /* `autoOffsetPoolToken` helper functions */
+    /* ------------------------------------------ */
+
+    /**
+     * @notice Allow users to deposit BCT / NCT.
+     * @dev Needs to be approved
+     */
+    // ** Why `public`?
+    function deposit(address _erc20Addr, uint256 _amount)
+        public
+        onlyRedeemable(_erc20Addr)
+    {
+        IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
+        balances[msg.sender][_erc20Addr] += _amount;
+    }
+
+    /**
+     * @notice Checks whether an address can be used by the contract.
+     * @param _erc20Address address of the ERC20 token to be checked
+     * @return True if the address can be used by the contract
+     */
+    // ** Seems like `isEligible()` isn't used anywhere in this contract
+    function isEligible(address _erc20Address) private view returns (bool) {
+        bool isToucanContract = IToucanContractRegistry(contractRegistryAddress)
+            .checkERC20(_erc20Address);
+        if (isToucanContract) return true;
+        if (_erc20Address == eligibleTokenAddresses["BCT"]) return true;
+        if (_erc20Address == eligibleTokenAddresses["NCT"]) return true;
+        if (_erc20Address == eligibleTokenAddresses["USDC"]) return true;
+        if (_erc20Address == eligibleTokenAddresses["WETH"]) return true;
+        if (_erc20Address == eligibleTokenAddresses["WMATIC"]) return true;
+        return false;
+    }
+
+    /**
+     * @notice Return how much of the specified ERC20 token is required in
+     * order to swap for the desired amount of a Toucan pool token, for
+     * example, BCT or NCT.
+     *
+     * @param _fromToken The address of the ERC20 token used for the swap
+     * @param _toToken The address of the pool token to swap for,
+     * for example, NCT or BCT
+     * @param _toAmount The desired amount of pool token to receive
+     * @return amountsIn The amount of the ERC20 token required in order to
+     * swap for the specified amount of the pool token
+     */
+    // ** Seems like `calculateNeededTokenAmount()` isn't used anywhere in this contract
+    function calculateNeededTokenAmount(
+        address _fromToken,
+        address _toToken,
+        uint256 _toAmount
+    )
+        public
+        view
+        onlySwappable(_fromToken)
+        onlyRedeemable(_toToken)
+        returns (uint256)
+    {
+        (, uint256[] memory amounts) = calculateExactOutSwap(
+            _fromToken,
+            _toToken,
+            _toAmount
+        );
+        return amounts[0];
+    }
+
+    /**
+     * @notice Calculates the expected amount of Toucan Pool token that can be
+     * acquired by swapping the provided amount of ERC20 token.
+     *
+     * @param _fromToken The address of the ERC20 token used for the swap
+     * @param _fromAmount The amount of ERC20 token to swap
+     * @param _toToken The address of the pool token to swap for,
+     * for example, NCT or BCT
+     * @return The expected amount of Pool token that can be acquired
+     */
+    function calculateExpectedPoolTokenForToken(
+        address _fromToken,
+        uint256 _fromAmount,
+        address _toToken
+    )
+        public
+        view
+        onlySwappable(_fromToken)
+        onlyRedeemable(_toToken)
+        returns (uint256)
+    {
+        (, uint256[] memory amounts) = calculateExactInSwap(
+            _fromToken,
+            _fromAmount,
+            _toToken
+        );
+        return amounts[amounts.length - 1];
+    }
+
+    /**
+     * @notice Calculates the expected amount of Toucan Pool token that can be
+     * acquired by swapping the provided amount of MATIC.
+     *
+     * @param _fromMaticAmount The amount of MATIC to swap
+     * @param _toToken The address of the pool token to swap for,
+     * for example, NCT or BCT
+     * @return The expected amount of Pool token that can be acquired
+     */
+    // ** Why does the function have `ETH` if we're swapping `MATIC`?
+    function calculateExpectedPoolTokenForETH(
+        uint256 _fromMaticAmount,
+        address _toToken
+    ) public view onlyRedeemable(_toToken) returns (uint256) {
+        address fromToken = eligibleTokenAddresses["WMATIC"];
+        (, uint256[] memory amounts) = calculateExactInSwap(
+            fromToken,
+            _fromMaticAmount,
+            _toToken
+        );
+        return amounts[amounts.length - 1];
+    }
+
+    /* calculateExpectedPoolTokenForToken() & calculateExpectedPoolTokenForETH() helper */
+    function calculateExactInSwap(
+        address _fromToken,
+        uint256 _fromAmount,
+        address _toToken
+    ) internal view returns (address[] memory path, uint256[] memory amounts) {
+        path = generatePath(_fromToken, _toToken);
+
+        amounts = routerSushi().getAmountsOut(_fromAmount, path);
+
+        // sanity check arrays
+        require(path.length == amounts.length, "Arrays unequal");
+        require(_fromAmount == amounts[0], "Input amount mismatch");
+    }
+
+    /**
+     * @notice Return how much MATIC is required in order to swap for the
+     * desired amount of a Toucan pool token, for example, BCT or NCT.
+     *
+     * @param _toToken The address of the pool token to swap for, for
+     * example, NCT or BCT
+     * @param _toAmount The desired amount of pool token to receive
+     * @return amounts The amount of MATIC required in order to swap for
+     * the specified amount of the pool token
+     */
+    // ** Why does the function have `ETH` if we're swapping `MATIC`?
+    function calculateNeededETHAmount(address _toToken, uint256 _toAmount)
+        public
+        view
+        onlyRedeemable(_toToken)
+        returns (uint256)
+    {
+        address fromToken = eligibleTokenAddresses["WMATIC"];
+        (, uint256[] memory amounts) = calculateExactOutSwap(
+            fromToken,
+            _toToken,
+            _toAmount
+        );
+        return amounts[0];
+    }
+
+    /**
+     * @notice Allow users to withdraw tokens they have deposited.
+     */
+    function withdraw(address _erc20Addr, uint256 _amount) public {
+        require(
+            balances[msg.sender][_erc20Addr] >= _amount,
+            "Insufficient balance"
+        );
+
+        IERC20(_erc20Addr).safeTransfer(msg.sender, _amount);
+        balances[msg.sender][_erc20Addr] -= _amount;
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
+
+    // ----------------------------------------
+    //  Admin methods
+    // ----------------------------------------
+
+    /**
+     * @notice Change or add eligible tokens and their addresses.
+     * @param _tokenSymbol The symbol of the token to add
+     * @param _address The address of the token to add
+     */
+    function setEligibleTokenAddress(
+        string memory _tokenSymbol,
+        address _address
+    ) public virtual onlyOwner {
+        eligibleTokenAddresses[_tokenSymbol] = _address;
+    }
+
+    /**
+     * @notice Delete eligible tokens stored in the contract.
+     * @param _tokenSymbol The symbol of the token to remove
+     */
+    function deleteEligibleTokenAddress(string memory _tokenSymbol)
+        public
+        virtual
+        onlyOwner
+    {
+        delete eligibleTokenAddresses[_tokenSymbol];
+    }
+
+    /**
+     * @notice Change the TCO2 contracts registry.
+     * @param _address The address of the Toucan contract registry to use
+     */
+    // ** Why `public`?
+    function setToucanContractRegistry(address _address)
+        public
+        virtual
+        onlyOwner
+    {
+        contractRegistryAddress = _address;
+    }
 }
