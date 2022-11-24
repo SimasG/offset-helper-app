@@ -413,6 +413,8 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // swap
         // ** Why are we using `call{}` here?
+        // ** `swapETHForExactTokens()` requires first address in the path to be WETH but we use MATIC here
+        // ** How does this work?
         uint256[] memory amounts = routerSushi().swapETHForExactTokens{
             value: msg.value
         }(_toAmount, path, address(this), block.timestamp);
@@ -489,8 +491,6 @@ contract OffsetHelper is OffsetHelperStorage {
         IERC20(_fromToken).approve(sushiRouterAddress, amountIn);
 
         // swap
-        // ** How does `block.timestamp` work here? Does it mean that the transaction must
-        // ** happen in the current block?
         uint256[] memory amounts = routerSushi().swapTokensForExactTokens(
             _toAmount,
             amountIn,
