@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+pragma solidity ^0.8.0;
+
 import "./OffsetHelperStorage.sol";
 // ** Why `SafeERC20.sol`?
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -305,7 +307,7 @@ contract OffsetHelper is OffsetHelperStorage {
         );
 
         // redeem BCT / NCT for TCO2s
-        (tco2s, amounts) = autoRedeem(_fromToken, amountToOffset);
+        (tco2s, amounts) = autoRedeem(_poolToken, amountToOffset);
 
         // retire the TCO2s to achieve offset
         autoRetire(tco2s, amounts);
