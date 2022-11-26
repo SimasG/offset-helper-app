@@ -121,7 +121,7 @@ contract OffsetHelper is OffsetHelperStorage {
     /* Offset Methods */
     /* ------------------------------------------ */
 
-    // ** Offset Method 1 ** //
+    // ** Offset Method 1 (specified BCT/NCT) ** //
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available by sending Toucan pool tokens, for example, BCT or NCT.
@@ -153,7 +153,7 @@ contract OffsetHelper is OffsetHelperStorage {
         autoRetire(tco2s, amounts);
     }
 
-    // ** Offset Method 2 ** //
+    // ** Offset Method 2 (specified BCT/NCT, swapped from MATIC) ** //
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available from the specified Toucan token pool by sending MATIC.
@@ -191,7 +191,7 @@ contract OffsetHelper is OffsetHelperStorage {
         autoRetire(tco2s, amounts);
     }
 
-    // ** Offset Method 3 ** //
+    // ** Offset Method 3 (specified MATIC) ** //
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available from the specified Toucan token pool by sending MATIC.
@@ -223,7 +223,7 @@ contract OffsetHelper is OffsetHelperStorage {
         autoRetire(tco2s, amounts);
     }
 
-    // ** Offset Method 4 ** //
+    // ** Offset Method 4 (specified BCT/NCT, swapped from WMATIC/USDC/WETH) ** //
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available from the specified Toucan token pool by sending ERC20
@@ -266,7 +266,7 @@ contract OffsetHelper is OffsetHelperStorage {
         autoRetire(tco2s, amounts);
     }
 
-    // ** Offset Method 5 ** //
+    // ** Offset Method 5 (specified WMATIC/USDC/WETH) ** //
     /**
      * @notice Retire carbon credits using the lowest quality (oldest) TCO2
      * tokens available from the specified Toucan token pool by sending ERC20
@@ -644,7 +644,6 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return amounts The amount of MATIC required in order to swap for
      * the specified amount of the pool token
      */
-    // ** Why does the function have `ETH` if we're swapping `MATIC`?
     function calculateNeededETHAmount(address _toToken, uint256 _toAmount)
         public
         view
@@ -698,7 +697,6 @@ contract OffsetHelper is OffsetHelperStorage {
      * for example, NCT or BCT
      * @return The expected amount of Pool token that can be acquired
      */
-    // ** Why does the function have `ETH` if we're swapping `MATIC`?
     function calculateExpectedPoolTokenForETH(
         uint256 _fromMaticAmount,
         address _toToken

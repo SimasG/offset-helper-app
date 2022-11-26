@@ -1,9 +1,10 @@
+import { IToucanContractRegistry } from "./../typechain-types/contracts/interfaces/IToucanContractRegistry";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 // import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { parseEther, parseUnits } from "ethers/lib/utils";
+import { formatEther, parseEther, parseUnits } from "ethers/lib/utils";
 
 import {
   IERC20,
@@ -147,6 +148,7 @@ describe("OffsetHelper", function () {
     { name: "BCT", token: () => bct },
   ];
 
+  // WMATIC/USDC/WETH specified
   describe("#autoOffsetExactInToken()", function () {
     // Retire specified WETH/USDC/WMATIC -> BCT/NCT
     // ** Why can't we just use `autoOffsetExactInToken()`
@@ -156,7 +158,7 @@ describe("OffsetHelper", function () {
       fromAmount: BigNumber,
       poolToken: IToucanPoolToken
     ) {
-      // Calculating expected # of BCT/NCT retired
+      // Calculating expected # of BCT/NCT to be retired
       const expOffset = await offsetHelper.calculateExpectedPoolTokenForToken(
         fromToken.address,
         fromAmount,
@@ -210,5 +212,151 @@ describe("OffsetHelper", function () {
     });
   });
 
-  describe("#autoOffsetExactInETH()", function () {});
+  // MATIC specified
+  describe("#autoOffsetExactInETH()", function () {
+    async function retireFixedInETH(
+      fromAmount: BigNumber,
+      poolToken: IToucanPoolToken
+    ) {
+      // Calculating expected # of BCT/NCT to be retired
+      const expOffset = await offsetHelper.calculateExpectedPoolTokenForETH(
+        fromAmount,
+        poolToken.address
+      );
+      expect(expOffset).to.be.greaterThan(0);
+
+      const supplyBefore = await poolToken.totalSupply();
+
+      // ** Since we're using `{value: ...}` syntax, does that mean that we'll automatically
+      // ** send the chain's native currency (i.e. MATIC in this case)?
+      await expect(
+        offsetHelper.autoOffsetExactInETH(poolToken.address, {
+          value: fromAmount,
+        })
+      )
+        .to.emit(offsetHelper, "Redeemed")
+        .withArgs(
+          addr2.address,
+          poolToken.address,
+          anyValue,
+          (amounts: BigNumber[]) => {
+            return expOffset == sumBN(amounts);
+          }
+        )
+        .and.to.changeEtherBalance(addr2.address, fromAmount.mul(-1));
+
+      const supplyAfter = await poolToken.totalSupply();
+
+      expect(supplyBefore).to.equal(supplyAfter.add(expOffset));
+    }
+
+    TOKEN_POOLS.forEach((pool) => {
+      it(`should retire 20 MATIC for ${pool.name} redemption`, async function () {
+        await retireFixedInETH(parseEther("20"), pool.token());
+      });
+    });
+  });
+
+  // BCT/NCT specified
+  // 1. autoOffsetExactOutToken(): WETH/USDC/WMATIC -> USDC -> BCT/NCT -> retire
+  // 2. autoOffsetExactOutETH(): MATIC -> USDC -> BCT/NCT -> retire
+  // 3. autoOffsetPoolToken(): BCT/NCT -> retire
+  describe("#autoOffsetExactOut{ETH,Token}()", function () {
+    // x MATIC -> y USDC -> 1 NCT -> 1 TCO2
+    it("should retire 1.0 TCO2 using a MATIC swap and NCT redemption", async function () {
+      // Setting initial state
+      const maticBalanceBefore = await addr2.getBalance();
+      const nctSupplyBefore = await nct.totalSupply();
+
+      // Calculating the cost in MATIC of retiring 1.0 TCO2
+      const maticCost = await offsetHelper.calculateNeededETHAmount(
+        nct.address,
+        ONE_ETHER
+      );
+
+      // ** Why do we not need to approve the tx here?
+      // Offseting with `autoOffsetExactOutETH()`
+      const txResponse = await offsetHelper.autoOffsetExactOutETH(
+        nct.address,
+        ONE_ETHER,
+        {
+          value: maticCost,
+        }
+      );
+      const txReceipt = await txResponse.wait(1);
+
+      // Calculating tx fees *for this exact tx*
+      // ** Why are we multiplying tho?
+      const txFees = txReceipt.gasUsed.mul(txReceipt.effectiveGasPrice);
+
+      // Setting new state
+      const maticBalanceAfter = await addr2.getBalance();
+      const nctSupplyAfter = await nct.totalSupply();
+
+      // Comparing chain states
+      expect(maticBalanceAfter.add(maticCost).add(txFees)).to.equal(
+        maticBalanceBefore
+      );
+      expect(nctSupplyAfter).to.equal(nctSupplyBefore.sub(ONE_ETHER));
+    });
+
+    // 1 NCT -> 1 TCO2
+    it("should retire 1.0 TCO2 using a NCT deposit and NCT redemption", async function () {
+      // Setting initial state
+      const nctBalanceBefore = await nct.balanceOf(addr2.address);
+      const nctSupplyBefore = await nct.totalSupply();
+
+      // Offsetting 1 NCT
+      await (await nct.approve(offsetHelper.address, ONE_ETHER)).wait();
+      await offsetHelper.autoOffsetPoolToken(nct.address, ONE_ETHER);
+
+      // Setting new state after the tx
+      const nctBalanceAfter = await nct.balanceOf(addr2.address);
+      const nctSupplyAfter = await nct.totalSupply();
+
+      // Testing
+      expect(nctBalanceBefore.sub(nctBalanceAfter)).to.equal(ONE_ETHER);
+      expect(nctSupplyBefore.sub(nctSupplyAfter)).to.equal(ONE_ETHER);
+    });
+
+    // 1. x WETH -> y USDC -> 1 NCT -> 1 TCO2
+    // 2. x WETH -> y USDC -> 1 BCT -> 1 TCO2
+    TOKEN_POOLS.forEach((pool) => {
+      it.only(`should retire 1.0 TCO2 using a WETH swap and ${pool.name} redemption`, async function () {
+        // Setting the initial chain state
+        const wethBalanceBefore = await weth.balanceOf(addr2.address);
+        const poolTokenSupplyBefore = await pool.token().totalSupply();
+
+        // Calculating the cost in WETH of retiring 1.0 TCO2
+        const wethCost = await offsetHelper.calculateNeededTokenAmount(
+          addresses.weth,
+          pool.name === "BCT" ? addresses.bct : addresses.nct,
+          ONE_ETHER
+        );
+
+        await (await weth.approve(offsetHelper.address, wethCost)).wait();
+        await offsetHelper.autoOffsetExactOutToken(
+          addresses.weth,
+          pool.name === "BCT" ? addresses.bct : addresses.nct,
+          ONE_ETHER
+        );
+
+        // Setting the chain state after the transactions
+        const wethBalanceAfter = await weth.balanceOf(addr2.address);
+        const poolTokenSupplyAfter = await pool.token().totalSupply();
+
+        expect(
+          formatEther(wethBalanceBefore.sub(wethBalanceAfter)),
+          `User should have spent ${formatEther(wethCost)}} WETH`
+        ).to.equal(formatEther(wethCost));
+
+        // I could also format BigInts here as well but it doesn't seem to matter
+        // as long as units (i.e. numbers & BigInts) are kept consistent
+        expect(
+          poolTokenSupplyBefore.sub(poolTokenSupplyAfter),
+          `Total supply of ${pool.name} should have decreased by 1`
+        ).to.equal(ONE_ETHER);
+      });
+    });
+  });
 });
