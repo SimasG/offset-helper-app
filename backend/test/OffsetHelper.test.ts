@@ -1,4 +1,3 @@
-import { IToucanContractRegistry } from "./../typechain-types/contracts/interfaces/IToucanContractRegistry";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 // import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
@@ -91,7 +90,7 @@ describe("OffsetHelper", function () {
       ]
     );
 
-    // Sending all but one ETH from every address to addr2
+    // Sending all but one MATIC(?) from every address to addr2
     // ** Why?
     await Promise.all(
       addrs.map(async (addr) => {
@@ -632,6 +631,194 @@ describe("OffsetHelper", function () {
   });
 
   describe("#deposit() and #withdraw()", function () {
-    it("Should deposit 1.0 NCT", async function () {});
+    TOKEN_POOLS.forEach((pool) => {
+      it(`Should deposit 1.0 ${pool.name}`, async function () {
+        await (
+          await pool.token().approve(offsetHelper.address, ONE_ETHER)
+        ).wait();
+
+        await (
+          await offsetHelper.deposit(
+            pool.name === "BCT" ? addresses.bct : addresses.nct,
+            ONE_ETHER
+          )
+        ).wait();
+
+        await expect(
+          await offsetHelper.balances(
+            addr2.address,
+            pool.name === "BCT" ? addresses.bct : addresses.nct
+          )
+        ).to.equal(ONE_ETHER);
+      });
+    });
+
+    it("Should fail to deposit because we have no NCT", async function () {
+      // Connect a different account with the NCT token contract
+      // (one that doesn't have any NCT inside)
+      await (
+        await nct.connect(addrs[0]).approve(offsetHelper.address, ONE_ETHER)
+      ).wait();
+
+      // Try to deposit NCT to OffsetHelper contract
+      await expect(
+        offsetHelper.connect(addrs[0]).deposit(nct.address, ONE_ETHER)
+      ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+    });
+
+    it("Should deposit and withdraw 1.0 NCT", async function () {
+      // Getting initial account NCT balance
+      const preDepositNCTBalance = await nct.balanceOf(addr2.address);
+
+      // Approving, depositing & withdrawing 1.0 NCT
+      await (await nct.approve(offsetHelper.address, ONE_ETHER)).wait();
+      await (await offsetHelper.deposit(addresses.nct, ONE_ETHER)).wait();
+      await (await offsetHelper.withdraw(addresses.nct, ONE_ETHER)).wait();
+
+      // Getting account NCT balance after deposit
+      const postWithdrawalNCTBalance = await nct.balanceOf(addr2.address);
+
+      // Testing
+      expect(preDepositNCTBalance).to.equal(postWithdrawalNCTBalance);
+    });
+
+    it("Should fail to withdraw because we haven't deposited enough NCT", async function () {
+      // Approving, depositing 1.0 NCT
+      await (await nct.approve(offsetHelper.address, ONE_ETHER)).wait();
+      await (await offsetHelper.deposit(addresses.nct, ONE_ETHER)).wait();
+
+      // Testing withdrawal
+      await expect(
+        offsetHelper.withdraw(addresses.nct, parseEther("2.0"))
+      ).to.be.revertedWith("Insufficient balance");
+    });
+
+    it("Should deposit 1.0 BCT", async function () {
+      await (await bct.approve(offsetHelper.address, ONE_ETHER)).wait();
+      await (await offsetHelper.deposit(addresses.bct, ONE_ETHER)).wait();
+      expect(
+        await offsetHelper.balances(addr2.address, addresses.bct)
+      ).to.equal(ONE_ETHER);
+    });
+  });
+
+  describe("#swapExactOut{ETH,Token}() for NCT", function () {
+    TOKEN_POOLS.forEach((pool) => {
+      it(`Should swap WETH for 1.0 ${pool.name}`, async function () {
+        // Getting pool token balance in OffsetHelper contract
+        const initialBalance = await pool
+          .token()
+          .balanceOf(offsetHelper.address);
+
+        // Approving & calculating how much WETH to deposit
+        await (
+          await weth.approve(
+            offsetHelper.address,
+            await offsetHelper.calculateNeededTokenAmount(
+              addresses.weth,
+              pool.name === "BCT" ? addresses.bct : addresses.nct,
+              ONE_ETHER
+            )
+          )
+        ).wait();
+
+        // Swapping
+        await (
+          await offsetHelper.swapExactOutToken(
+            addresses.weth,
+            pool.name === "BCT" ? addresses.bct : addresses.nct,
+            ONE_ETHER
+          )
+        ).wait();
+
+        // Getting OffsetHelper NCT balance after swap
+        const balanceAfterSwap = await pool
+          .token()
+          .balanceOf(offsetHelper.address);
+
+        // Testing
+        // Expect the offsetHelper will have 1 extra NCT in its balance
+        expect(balanceAfterSwap.sub(initialBalance)).to.equal(ONE_ETHER);
+        // Expect that the user should have his in-contract balance for NCT to be 1.0
+        expect(
+          await offsetHelper.balances(
+            addr2.address,
+            pool.name === "BCT" ? addresses.bct : addresses.nct
+          )
+        ).to.equal(ONE_ETHER);
+      });
+    });
+
+    it("Should swap MATIC for 1.0 NCT", async function () {
+      // Declaring initial NCT balance of the user in the OffsetHelper contract
+      const nctBalanceBefore = await offsetHelper.balances(
+        addr2.address,
+        addresses.nct
+      );
+
+      // Calculating how much MATIC to deposit
+      const maticToSend = await offsetHelper.calculateNeededETHAmount(
+        addresses.nct,
+        ONE_ETHER
+      );
+
+      // ** Why do we not need to approve the tx with a native token?
+      await (
+        await offsetHelper.swapExactOutETH(addresses.nct, ONE_ETHER, {
+          value: maticToSend,
+        })
+      ).wait();
+
+      // Finding NCT balance of the user in the OffsetHelper contract after the swap
+      const nctBalanceAfter = await offsetHelper.balances(
+        addr2.address,
+        addresses.nct
+      );
+
+      // Testing
+      expect(nctBalanceAfter.sub(nctBalanceBefore)).to.equal(ONE_ETHER);
+    });
+
+    // ** Don't understand this test
+    it("Should send surplus MATIC to user", async function () {
+      // ** Don't understand `offsetHelper.provider`
+      const preSwapETHBalance = await offsetHelper.provider.getBalance(
+        offsetHelper.address
+      );
+
+      // Depositing MATIC to deposit
+      const maticToSend = await offsetHelper.calculateNeededETHAmount(
+        addresses.nct,
+        ONE_ETHER
+      );
+
+      // ** Why do we not need to approve the tx with a native token?
+      await (
+        await offsetHelper.swapExactOutETH(addresses.nct, ONE_ETHER, {
+          value: maticToSend.add(parseEther("0.5")),
+        })
+      ).wait();
+
+      const postSwapETHBalance = await offsetHelper.provider.getBalance(
+        offsetHelper.address
+      );
+
+      expect(formatEther(preSwapETHBalance)).to.be.eql(
+        formatEther(postSwapETHBalance)
+      );
+    });
+
+    it("Should fail since we have no WETH", async function () {
+      // Connecting weth contract with an account that has no WETH
+      await (
+        await weth.connect(addrs[0]).approve(offsetHelper.address, ONE_ETHER)
+      ).wait();
+
+      await expect(
+        offsetHelper
+          .connect(addrs[0])
+          .swapExactOutToken(addresses.weth, addresses.nct, ONE_ETHER)
+      ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+    });
   });
 });
