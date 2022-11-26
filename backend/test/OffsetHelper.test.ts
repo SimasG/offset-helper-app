@@ -421,7 +421,7 @@ describe("OffsetHelper", function () {
     });
   });
 
-  describe("#autoRedeem()", async function () {
+  describe("#autoRedeem()", function () {
     it("Should fail because we haven't deposited NCT", async function () {
       await expect(
         offsetHelper.autoRedeem(addresses.nct, ONE_ETHER)
@@ -431,32 +431,22 @@ describe("OffsetHelper", function () {
     TOKEN_POOLS.forEach((pool) => {
       it(`should redeem ${pool.name} from deposit`, async function () {
         // Setting the initial chain state
-        const states: {
+        const state: {
           userPoolTokenBalance: BigNumber;
           contractPoolTokenBalance: BigNumber;
           poolTokenSupply: BigNumber;
         }[] = [];
-        states.push({
-          userPoolTokenBalance: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).balanceOf(addr2.address),
-          contractPoolTokenBalance: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).balanceOf(offsetHelper.address),
-          poolTokenSupply: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).totalSupply(),
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
         });
 
         // Depositing 1.0 NCT into the OffsetHelper contract
         await (
-          await (pool.name === "BCT" ? bct : nct).approve(
-            offsetHelper.address,
-            ONE_ETHER
-          )
+          await pool.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
         await (
           await offsetHelper.deposit(
@@ -466,36 +456,29 @@ describe("OffsetHelper", function () {
         ).wait();
 
         // Adding new state after the deposit
-        states.push({
-          userPoolTokenBalance: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).balanceOf(addr2.address),
-          contractPoolTokenBalance: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).balanceOf(offsetHelper.address),
-          poolTokenSupply: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).totalSupply(),
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
         });
 
         // Comparing states
         expect(
-          states[0].userPoolTokenBalance,
+          state[0].userPoolTokenBalance,
           `User should have 1 less ${pool.name} post deposit`
-        ).to.equal(states[1].userPoolTokenBalance.add(ONE_ETHER));
+        ).to.equal(state[1].userPoolTokenBalance.add(ONE_ETHER));
 
         expect(
-          states[1].contractPoolTokenBalance,
+          state[1].contractPoolTokenBalance,
           `Contract should have 1 more ${pool.name} post deposit`
-        ).to.equal(states[0].contractPoolTokenBalance.add(ONE_ETHER));
+        ).to.equal(state[0].contractPoolTokenBalance.add(ONE_ETHER));
 
         expect(
-          states[0].poolTokenSupply,
+          state[0].poolTokenSupply,
           "NCT supply should be the same post deposit"
-        ).to.equal(states[0].poolTokenSupply);
+        ).to.equal(state[0].poolTokenSupply);
 
         // ** Why don't we need to approve the autoRedeem?
         // Redeeming 1.0 NCt from the OffsetHelper contract for TCO2s
@@ -505,39 +488,150 @@ describe("OffsetHelper", function () {
         );
 
         // Adding new state after the redeem tx
-        states.push({
-          userPoolTokenBalance: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).balanceOf(addr2.address),
-          contractPoolTokenBalance: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).balanceOf(offsetHelper.address),
-          poolTokenSupply: await (pool.name === "BCT"
-            ? bct
-            : nct
-          ).totalSupply(),
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
         });
 
         // Comparing the chain state (prior vs post redeem)
         expect(
-          states[2].userPoolTokenBalance,
+          state[2].userPoolTokenBalance,
           "User should have the same amount of NCT post redeem"
-        ).to.equal(states[2].userPoolTokenBalance);
+        ).to.equal(state[2].userPoolTokenBalance);
 
         expect(
-          states[2].contractPoolTokenBalance,
+          state[2].contractPoolTokenBalance,
           "Contract should have 1 less NCT post redeem"
-        ).to.equal(states[1].contractPoolTokenBalance.sub(ONE_ETHER));
+        ).to.equal(state[1].contractPoolTokenBalance.sub(ONE_ETHER));
 
         expect(
-          states[2].poolTokenSupply,
+          state[2].poolTokenSupply,
           "NCT supply should be less by 1 post redeem"
-        ).to.equal(states[1].poolTokenSupply.sub(ONE_ETHER));
+        ).to.equal(state[1].poolTokenSupply.sub(ONE_ETHER));
       });
     });
   });
 
-  describe("#autoRetire()", async function () {});
+  describe("#autoRetire()", function () {
+    TOKEN_POOLS.forEach((pool) => {
+      it(`should retire using an ${pool.name} deposit`, async function () {
+        // Setting the initial state
+        const state: {
+          userPoolTokenBalance: BigNumber;
+          contractPoolTokenBalance: BigNumber;
+          poolTokenSupply: BigNumber;
+        }[] = [];
+
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
+        });
+
+        // Depositing NCT into the OffsetHelper contract
+        await (
+          await pool.token().approve(offsetHelper.address, ONE_ETHER)
+        ).wait();
+        await (
+          await offsetHelper.deposit(
+            pool.name === "BCT" ? addresses.bct : addresses.nct,
+            ONE_ETHER
+          )
+        ).wait();
+
+        // Adding new state after the deposit
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
+        });
+
+        // Comparing the states (before vs after deposit)
+        expect(state[0].userPoolTokenBalance.sub(ONE_ETHER)).to.equal(
+          state[1].userPoolTokenBalance
+        );
+        expect(state[0].contractPoolTokenBalance.add(ONE_ETHER)).to.equal(
+          state[1].contractPoolTokenBalance
+        );
+        expect(state[0].poolTokenSupply).to.equal(state[1].poolTokenSupply);
+
+        // Redeeming 1.0 NCT/BCT for 1.0 TCO2 in OffsetHelper contract
+        const redeemReceipt = await (
+          await offsetHelper.autoRedeem(
+            pool.name === "BCT" ? addresses.bct : addresses.nct,
+            ONE_ETHER
+          )
+        ).wait();
+
+        // Adding new state after redemption
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
+        });
+
+        // Testing states after redemption
+        expect(state[1].userPoolTokenBalance).to.equal(
+          state[2].userPoolTokenBalance
+        );
+        expect(state[1].contractPoolTokenBalance.sub(ONE_ETHER)).to.equal(
+          state[2].contractPoolTokenBalance
+        );
+        expect(state[1].poolTokenSupply.sub(ONE_ETHER)).to.equal(
+          state[2].poolTokenSupply
+        );
+
+        // Getting tco2s & amounts that were redeemed
+        if (!redeemReceipt.events) throw new Error("No events emitted");
+
+        // Getting the arguments of the last redeemed event
+        const tco2s =
+          redeemReceipt.events[redeemReceipt.events.length - 1].args?.tco2s;
+        const amounts =
+          redeemReceipt.events[redeemReceipt.events.length - 1].args?.amounts;
+
+        await offsetHelper.autoRetire(tco2s, amounts);
+
+        // Adding new state after retirement
+        state.push({
+          userPoolTokenBalance: await pool.token().balanceOf(addr2.address),
+          contractPoolTokenBalance: await pool
+            .token()
+            .balanceOf(offsetHelper.address),
+          poolTokenSupply: await pool.token().totalSupply(),
+        });
+
+        // Testing the states (before vs after retirement)
+        expect(state[2].userPoolTokenBalance).to.equal(
+          state[3].userPoolTokenBalance
+        );
+        expect(state[2].contractPoolTokenBalance).to.equal(
+          state[3].contractPoolTokenBalance
+        );
+        expect(state[2].poolTokenSupply).to.equal(state[3].poolTokenSupply);
+      });
+    });
+
+    it("Should fail because we haven't redeemed any TCO2", async function () {
+      await expect(
+        offsetHelper.autoRetire(
+          ["0xb139C4cC9D20A3618E9a2268D73Eff18C496B991"],
+          [ONE_ETHER]
+        )
+      ).to.be.revertedWith("Insufficient TCO2 balance");
+    });
+  });
+
+  describe("#deposit() and #withdraw()", function () {
+    it("Should deposit 1.0 NCT", async function () {});
+  });
 });
