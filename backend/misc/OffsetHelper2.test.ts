@@ -1,5 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+// import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
@@ -18,7 +18,7 @@ import {
   Swapper__factory,
 } from "../typechain-types";
 import addresses from "../utils/addresses";
-import { BigNumber } from "ethers";
+import { BigNumber, providers } from "ethers";
 import { sum as sumBN } from "../utils/bignumber";
 
 const ONE_ETHER = parseEther("1.0");
@@ -29,25 +29,18 @@ function parseUSDC(s: string): BigNumber {
 }
 
 describe("OffsetHelper", function () {
-  let nct: IToucanPoolToken;
+  let offsetHelper: OffsetHelper;
+  let swapper: Swapper;
   let bct: IToucanPoolToken;
-  // ** Why is token's value a function?
-  let TOKEN_POOLS = [
-    { name: "NCT", token: () => nct },
-    { name: "BCT", token: () => bct },
-  ];
+  let nct: IToucanPoolToken;
+  let weth: IERC20;
+  let wmatic: IWETH;
+  let usdc: IERC20;
+  let addr1: SignerWithAddress;
+  let addr2: SignerWithAddress;
+  let addrs: SignerWithAddress[];
 
-  async function deployOffsetHelperFixture() {
-    let offsetHelper: OffsetHelper;
-    let swapper: Swapper;
-    let weth: IERC20;
-    let wmatic: IWETH;
-    let usdc: IERC20;
-    let addr1: SignerWithAddress;
-    let addr2: SignerWithAddress;
-    let addrs: SignerWithAddress[];
-
-    // * beforeEach() logic prior
+  beforeEach(async function () {
     [addr1, addr2, ...addrs] = await ethers.getSigners();
 
     // Creating `OffsetHelper` contract factory & linking it with a signer account
@@ -69,14 +62,18 @@ describe("OffsetHelper", function () {
     );
 
     // Connecting factory contracts with different signers
+    // ** How does adding `addresses.bct` etc work?
     // ** How are we able to use interfaces instead of the actual contracts?
     bct = IToucanPoolToken__factory.connect(addresses.bct, addr2);
     nct = IToucanPoolToken__factory.connect(addresses.nct, addr2);
     usdc = IERC20__factory.connect(addresses.usdc, addr2);
     weth = IERC20__factory.connect(addresses.weth, addr2);
     wmatic = IWETH__factory.connect(addresses.wmatic, addr2);
+  });
 
-    // * before() logic prior
+  before(async () => {
+    [addr1, addr2, ...addrs] = await ethers.getSigners();
+
     const swapperFactory = (await ethers.getContractFactory(
       "Swapper",
       addr2
@@ -142,19 +139,13 @@ describe("OffsetHelper", function () {
         parseEther("50.0")
       ),
     });
+  });
 
-    return {
-      offsetHelper,
-      weth,
-      wmatic,
-      usdc,
-      addr1,
-      addr2,
-      addrs,
-      nct,
-      bct,
-    };
-  }
+  // ** Why is token's value a function?
+  const TOKEN_POOLS = [
+    { name: "NCT", token: () => nct },
+    { name: "BCT", token: () => bct },
+  ];
 
   // WMATIC/USDC/WETH specified
   describe("#autoOffsetExactInToken()", function () {
@@ -166,10 +157,6 @@ describe("OffsetHelper", function () {
       fromAmount: BigNumber,
       poolToken: IToucanPoolToken
     ) {
-      const { offsetHelper, addr2 } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Calculating expected # of BCT/NCT to be retired
       const expOffset = await offsetHelper.calculateExpectedPoolTokenForToken(
         fromToken.address,
@@ -213,15 +200,12 @@ describe("OffsetHelper", function () {
 
     TOKEN_POOLS.forEach((pool) => {
       it(`should retire 1 WETH for ${pool.name} redemption`, async function () {
-        const { weth } = await loadFixture(deployOffsetHelperFixture);
         await retireFixedInToken(weth, ONE_ETHER, pool.token());
       });
       it(`should retire 100 USDC for ${pool.name} redemption`, async function () {
-        const { usdc } = await loadFixture(deployOffsetHelperFixture);
         await retireFixedInToken(usdc, parseUSDC("100"), pool.token());
       });
       it(`should retire 20 WMATIC for ${pool.name} redemption`, async function () {
-        const { wmatic } = await loadFixture(deployOffsetHelperFixture);
         await retireFixedInToken(wmatic, parseEther("20"), pool.token());
       });
     });
@@ -233,10 +217,6 @@ describe("OffsetHelper", function () {
       fromAmount: BigNumber,
       poolToken: IToucanPoolToken
     ) {
-      const { offsetHelper, addr2 } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Calculating expected # of BCT/NCT to be retired
       const expOffset = await offsetHelper.calculateExpectedPoolTokenForETH(
         fromAmount,
@@ -283,10 +263,6 @@ describe("OffsetHelper", function () {
   describe("#autoOffsetExactOut{ETH,Token}()", function () {
     // x MATIC -> y USDC -> 1 NCT -> 1 TCO2
     it("should retire 1.0 TCO2 using a MATIC swap and NCT redemption", async function () {
-      const { offsetHelper, addr2, nct } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Setting initial state
       const maticBalanceBefore = await addr2.getBalance();
       const nctSupplyBefore = await nct.totalSupply();
@@ -326,10 +302,6 @@ describe("OffsetHelper", function () {
 
     // 1 NCT -> 1 TCO2
     it("should retire 1.0 TCO2 using a NCT deposit and NCT redemption", async function () {
-      const { offsetHelper, addr2, nct } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Setting initial state
       const nctBalanceBefore = await nct.balanceOf(addr2.address);
       const nctSupplyBefore = await nct.totalSupply();
@@ -351,10 +323,6 @@ describe("OffsetHelper", function () {
     // 2. x WETH -> y USDC -> 1 BCT -> 1 TCO2
     TOKEN_POOLS.forEach((pool) => {
       it(`should retire 1.0 TCO2 using a WETH swap and ${pool.name} redemption`, async function () {
-        const { offsetHelper, addr2, weth } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-
         // Setting the initial chain state
         const wethBalanceBefore = await weth.balanceOf(addr2.address);
         const poolTokenSupplyBefore = await pool.token().totalSupply();
@@ -386,17 +354,13 @@ describe("OffsetHelper", function () {
         // as long as units (i.e. numbers & BigInts) are kept consistent
         expect(
           poolTokenSupplyBefore.sub(poolTokenSupplyAfter),
-          `Total supply of BCT should have decreased by 1`
+          `Total supply of ${pool.name} should have decreased by 1`
         ).to.equal(ONE_ETHER);
       });
     });
 
     // x USDC -> 1 NCT -> TCO2
     it("should retire 1.0 TCO2 using a USDC swap and NCT redemption", async function () {
-      const { offsetHelper, addr2, usdc, nct } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Setting initial state
       const usdcBalanceBefore = await usdc.balanceOf(addr2.address);
       const nctSupplyBefore = await nct.totalSupply();
@@ -427,10 +391,6 @@ describe("OffsetHelper", function () {
 
     // x WMATIC -> y USDC -> 1 NCT -> 1 TCO2
     it("should retire 1.0 TCO2 using a WMATIC swap and NCT redemption", async function () {
-      const { offsetHelper, addr2, wmatic, nct } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Setting initial state
       const wmaticBalanceBefore = await wmatic.balanceOf(addr2.address);
       const nctSupplyBefore = await nct.totalSupply();
@@ -462,8 +422,6 @@ describe("OffsetHelper", function () {
 
   describe("#autoRedeem()", function () {
     it("Should fail because we haven't deposited NCT", async function () {
-      const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
-
       await expect(
         offsetHelper.autoRedeem(addresses.nct, ONE_ETHER)
       ).to.be.revertedWith("Insufficient NCT/BCT balance");
@@ -471,10 +429,6 @@ describe("OffsetHelper", function () {
 
     TOKEN_POOLS.forEach((pool) => {
       it(`should redeem ${pool.name} from deposit`, async function () {
-        const { offsetHelper, addr2 } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-
         // Setting the initial chain state
         const state: {
           userPoolTokenBalance: BigNumber;
@@ -489,7 +443,7 @@ describe("OffsetHelper", function () {
           poolTokenSupply: await pool.token().totalSupply(),
         });
 
-        // Depositing 1.0 BCT/NCT into the OffsetHelper contract
+        // Depositing 1.0 NCT into the OffsetHelper contract
         await (
           await pool.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
@@ -512,12 +466,12 @@ describe("OffsetHelper", function () {
         // Comparing states
         expect(
           state[0].userPoolTokenBalance,
-          `User should have 1 less BCT post deposit`
+          `User should have 1 less ${pool.name} post deposit`
         ).to.equal(state[1].userPoolTokenBalance.add(ONE_ETHER));
 
         expect(
           state[1].contractPoolTokenBalance,
-          `Contract should have 1 more BCT post deposit`
+          `Contract should have 1 more ${pool.name} post deposit`
         ).to.equal(state[0].contractPoolTokenBalance.add(ONE_ETHER));
 
         expect(
@@ -526,7 +480,7 @@ describe("OffsetHelper", function () {
         ).to.equal(state[0].poolTokenSupply);
 
         // ** Why don't we need to approve the autoRedeem?
-        // Redeeming 1.0 BCT/NCT from the OffsetHelper contract for TCO2s
+        // Redeeming 1.0 NCt from the OffsetHelper contract for TCO2s
         await offsetHelper.autoRedeem(
           pool.name === "BCT" ? addresses.bct : addresses.nct,
           ONE_ETHER
@@ -544,17 +498,17 @@ describe("OffsetHelper", function () {
         // Comparing the chain state (prior vs post redeem)
         expect(
           state[2].userPoolTokenBalance,
-          `User should have the same amount of ${pool.name} post redeem`
+          "User should have the same amount of NCT post redeem"
         ).to.equal(state[2].userPoolTokenBalance);
 
         expect(
           state[2].contractPoolTokenBalance,
-          `Contract should have 1 less ${pool.name} post redeem`
+          "Contract should have 1 less NCT post redeem"
         ).to.equal(state[1].contractPoolTokenBalance.sub(ONE_ETHER));
 
         expect(
           state[2].poolTokenSupply,
-          `${pool.name} supply should be less by 1 post redeem`
+          "NCT supply should be less by 1 post redeem"
         ).to.equal(state[1].poolTokenSupply.sub(ONE_ETHER));
       });
     });
@@ -563,10 +517,6 @@ describe("OffsetHelper", function () {
   describe("#autoRetire()", function () {
     TOKEN_POOLS.forEach((pool) => {
       it(`should retire using an ${pool.name} deposit`, async function () {
-        const { offsetHelper, addr2 } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-
         // Setting the initial state
         const state: {
           userPoolTokenBalance: BigNumber;
@@ -582,7 +532,7 @@ describe("OffsetHelper", function () {
           poolTokenSupply: await pool.token().totalSupply(),
         });
 
-        // Depositing BCT/NCT into the OffsetHelper contract
+        // Depositing NCT into the OffsetHelper contract
         await (
           await pool.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
@@ -611,7 +561,7 @@ describe("OffsetHelper", function () {
         );
         expect(state[0].poolTokenSupply).to.equal(state[1].poolTokenSupply);
 
-        // Redeeming 1.0 BCT/NCT for 1.0 TCO2 in OffsetHelper contract
+        // Redeeming 1.0 NCT/BCT for 1.0 TCO2 in OffsetHelper contract
         const redeemReceipt = await (
           await offsetHelper.autoRedeem(
             pool.name === "BCT" ? addresses.bct : addresses.nct,
@@ -671,8 +621,6 @@ describe("OffsetHelper", function () {
     });
 
     it("Should fail because we haven't redeemed any TCO2", async function () {
-      const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
-
       await expect(
         offsetHelper.autoRetire(
           ["0xb139C4cC9D20A3618E9a2268D73Eff18C496B991"],
@@ -685,9 +633,6 @@ describe("OffsetHelper", function () {
   describe("#deposit() and #withdraw()", function () {
     TOKEN_POOLS.forEach((pool) => {
       it(`Should deposit 1.0 ${pool.name}`, async function () {
-        const { offsetHelper, addr2 } = await loadFixture(
-          deployOffsetHelperFixture
-        );
         await (
           await pool.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
@@ -709,10 +654,6 @@ describe("OffsetHelper", function () {
     });
 
     it("Should fail to deposit because we have no NCT", async function () {
-      const { offsetHelper, nct, addrs } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Connect a different account with the NCT token contract
       // (one that doesn't have any NCT inside)
       await (
@@ -726,10 +667,6 @@ describe("OffsetHelper", function () {
     });
 
     it("Should deposit and withdraw 1.0 NCT", async function () {
-      const { offsetHelper, addr2, nct } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Getting initial account NCT balance
       const preDepositNCTBalance = await nct.balanceOf(addr2.address);
 
@@ -746,10 +683,6 @@ describe("OffsetHelper", function () {
     });
 
     it("Should fail to withdraw because we haven't deposited enough NCT", async function () {
-      const { offsetHelper, nct } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Approving, depositing 1.0 NCT
       await (await nct.approve(offsetHelper.address, ONE_ETHER)).wait();
       await (await offsetHelper.deposit(addresses.nct, ONE_ETHER)).wait();
@@ -759,15 +692,19 @@ describe("OffsetHelper", function () {
         offsetHelper.withdraw(addresses.nct, parseEther("2.0"))
       ).to.be.revertedWith("Insufficient balance");
     });
+
+    it("Should deposit 1.0 BCT", async function () {
+      await (await bct.approve(offsetHelper.address, ONE_ETHER)).wait();
+      await (await offsetHelper.deposit(addresses.bct, ONE_ETHER)).wait();
+      expect(
+        await offsetHelper.balances(addr2.address, addresses.bct)
+      ).to.equal(ONE_ETHER);
+    });
   });
 
   describe("#swapExactOut{ETH,Token}() for NCT", function () {
     TOKEN_POOLS.forEach((pool) => {
       it(`Should swap WETH for 1.0 ${pool.name}`, async function () {
-        const { offsetHelper, weth, addr2 } = await loadFixture(
-          deployOffsetHelperFixture
-        );
-
         // Getting pool token balance in OffsetHelper contract
         const initialBalance = await pool
           .token()
@@ -794,15 +731,15 @@ describe("OffsetHelper", function () {
           )
         ).wait();
 
-        // Getting OffsetHelper BCT/NCT balance after swap
+        // Getting OffsetHelper NCT balance after swap
         const balanceAfterSwap = await pool
           .token()
           .balanceOf(offsetHelper.address);
 
         // Testing
-        // Expect the offsetHelper will have 1 extra BCT/NCT in its balance
+        // Expect the offsetHelper will have 1 extra NCT in its balance
         expect(balanceAfterSwap.sub(initialBalance)).to.equal(ONE_ETHER);
-        // Expect that the user should have his in-contract balance for BCT/NCT to be 1.0
+        // Expect that the user should have his in-contract balance for NCT to be 1.0
         expect(
           await offsetHelper.balances(
             addr2.address,
@@ -813,10 +750,6 @@ describe("OffsetHelper", function () {
     });
 
     it("Should swap MATIC for 1.0 NCT", async function () {
-      const { offsetHelper, addr2 } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Declaring initial NCT balance of the user in the OffsetHelper contract
       const nctBalanceBefore = await offsetHelper.balances(
         addr2.address,
@@ -848,8 +781,6 @@ describe("OffsetHelper", function () {
 
     // ** Don't understand this test
     it("Should send surplus MATIC to user", async function () {
-      const { offsetHelper } = await loadFixture(deployOffsetHelperFixture);
-
       // ** Don't understand `offsetHelper.provider`
       const preSwapETHBalance = await offsetHelper.provider.getBalance(
         offsetHelper.address
@@ -878,10 +809,6 @@ describe("OffsetHelper", function () {
     });
 
     it("Should fail since we have no WETH", async function () {
-      const { offsetHelper, weth, addrs } = await loadFixture(
-        deployOffsetHelperFixture
-      );
-
       // Connecting weth contract with an account that has no WETH
       await (
         await weth.connect(addrs[0]).approve(offsetHelper.address, ONE_ETHER)

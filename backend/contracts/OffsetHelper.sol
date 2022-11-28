@@ -325,8 +325,12 @@ contract OffsetHelper is OffsetHelperStorage {
         public
         onlyRedeemable(_erc20Addr)
     {
-        IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
+        // * Checks-Effects-Interactions change
+        // Although here it seems to not be a security issue since no
+        // user in their right mind do a re-entrancy attack as it would
+        // drain their own balances without being reflect in the contract
         balances[msg.sender][_erc20Addr] += _amount;
+        IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     /**
@@ -414,7 +418,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address[] memory path = generatePath(fromToken, _toToken);
 
         // swap
-        // ** Why are we using `call{}` here?
+        // Why are we using `call{}` here? Because we're sending the native Polygon Mainnet currency (MATIC)
         // ** `swapETHForExactTokens()` requires first address in the path to be WETH but we use MATIC here
         // ** How does this work?
         uint256[] memory amounts = routerSushi().swapETHForExactTokens{
@@ -432,6 +436,8 @@ contract OffsetHelper is OffsetHelperStorage {
             require(success, "Failed to send surplus back");
         }
 
+        // ** Adding Checks-Effects-Interactions pattern here doesn't make sense to me
+        // ** The user should send funds first before their contract balance is updated
         // update balances
         balances[msg.sender][_toToken] += _toAmount;
     }
@@ -455,6 +461,8 @@ contract OffsetHelper is OffsetHelperStorage {
         // ** require(path.length == amounts.length, "Unequal arrays");
         uint256 amountOut = amounts[path.length - 1];
 
+        // ** Adding Checks-Effects-Interactions pattern here doesn't make sense to me
+        // ** The user should send funds first before their contract balance is updated
         // update balances
         balances[msg.sender][_toToken] += amountOut;
 

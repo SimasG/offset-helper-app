@@ -1,6 +1,6 @@
-// SPDX-FileCopyrightText: 2021 Toucan Labs
+// SPDX-FileCopyrightText: 2022 Toucan Labs
 //
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GPL-3.0
 
 // If you encounter a vulnerability or an issue, please contact <security@toucan.earth> or visit security.toucan.earth
 pragma solidity ^0.8.0;
