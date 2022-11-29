@@ -7,7 +7,7 @@ const Home: NextPage = () => {
         {/* Pay In Select */}
         <div>
           <label htmlFor="pay-select" className="block text-xl">
-            Pay in:
+            Pay in :
           </label>
           <select name="payment-selections" id="pay-select">
             <option value="">--Please choose an option--</option>
