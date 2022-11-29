@@ -1,12 +1,5 @@
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-import "@nomiclabs/hardhat-etherscan";
-import "@nomiclabs/hardhat-ethers";
-import "@nomicfoundation/hardhat-chai-matchers";
-import "@typechain/hardhat";
-import "hardhat-gas-reporter";
-import "solidity-coverage";
-
 // Hopefully this is equivalent to 1. `import * as dotenv from "dotenv"` 2. `dotenv.config()`
 import "dotenv/config";
 

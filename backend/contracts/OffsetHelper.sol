@@ -515,6 +515,8 @@ contract OffsetHelper is OffsetHelperStorage {
             IERC20(_fromToken).approve(sushiRouterAddress, 0);
         }
 
+        // ** Adding Checks-Effects-Interactions pattern here doesn't make sense to me
+        // ** The user should send funds first before their contract balance is updated
         // update balances
         balances[msg.sender][_toToken] += _toAmount;
     }
@@ -558,6 +560,8 @@ contract OffsetHelper is OffsetHelperStorage {
         );
         uint256 amountOut = amounts[len - 1];
 
+        // ** Adding Checks-Effects-Interactions pattern here doesn't make sense to me
+        // ** The user should send funds first before their contract balance is updated
         // update balances
         balances[msg.sender][_toToken] += amountOut;
 
@@ -742,8 +746,9 @@ contract OffsetHelper is OffsetHelperStorage {
             "Insufficient balance"
         );
 
-        IERC20(_erc20Addr).safeTransfer(msg.sender, _amount);
+        // * Checks-Effects-Interactions change
         balances[msg.sender][_erc20Addr] -= _amount;
+        IERC20(_erc20Addr).safeTransfer(msg.sender, _amount);
     }
 
     /* ------------------------------------------ */

@@ -205,10 +205,9 @@ describe("OffsetHelper", function () {
           fromAmount.mul(-1)
         );
 
+      // ** Hardhat Chai Matchers: don't think it makes sense to use them here
       const supplyAfter = await poolToken.totalSupply();
       expect(supplyBefore).to.equal(supplyAfter.add(expOffset));
-      // Or this, same logic
-      // expect(supplyBefore.sub(supplyAfter)).to.equal(expOffset);
     }
 
     TOKEN_POOLS.forEach((pool) => {
@@ -246,8 +245,6 @@ describe("OffsetHelper", function () {
 
       const supplyBefore = await poolToken.totalSupply();
 
-      // ** Since we're using `{value: ...}` syntax, does that mean that we'll automatically
-      // ** send the chain's native currency (i.e. MATIC in this case)?
       await expect(
         offsetHelper.autoOffsetExactInETH(poolToken.address, {
           value: fromAmount,
@@ -264,8 +261,8 @@ describe("OffsetHelper", function () {
         )
         .and.to.changeEtherBalance(addr2.address, fromAmount.mul(-1));
 
+      // ** Hardhat Chai Matchers: don't think it makes sense to use them here
       const supplyAfter = await poolToken.totalSupply();
-
       expect(supplyBefore).to.equal(supplyAfter.add(expOffset));
     }
 
@@ -345,6 +342,12 @@ describe("OffsetHelper", function () {
       // Testing
       expect(nctBalanceBefore.sub(nctBalanceAfter)).to.equal(ONE_ETHER);
       expect(nctSupplyBefore.sub(nctSupplyAfter)).to.equal(ONE_ETHER);
+
+      // * Personally, using Hardhat Chai Matchers for balance changes isn't too intuitive for me
+      // * I'd rather keep track of different balances manually for now.
+      //   await expect(() =>
+      //     offsetHelper.autoOffsetPoolToken(nct.address, 1)
+      //   ).to.changeTokenBalance(nct, addr2, -1);
     });
 
     // 1. x WETH -> y USDC -> 1 NCT -> 1 TCO2
