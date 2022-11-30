@@ -17,5 +17,5 @@ export type initialValuesProps = {
   paymentMethod: string;
   carbonToken: string;
   offsetMethod: string;
-  amountToOffset: number;
+  amountToOffset: number | string;
 };

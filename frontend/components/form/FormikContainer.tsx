@@ -10,7 +10,7 @@ const FormikContainer = () => {
     paymentMethod: "",
     carbonToken: "",
     offsetMethod: "",
-    amountToOffset: 0,
+    amountToOffset: "",
   };
   const validationSchema = Yup.object({
     paymentMethod: Yup.string().required("Required"),
@@ -48,14 +48,59 @@ const FormikContainer = () => {
   ];
 
   // * Functions
-  // Changing carbon token to offset option array according to which payment method was selected
+
+  // 1. Changing carbon token to offset option array according to which payment method was selected
   // E.g. if BCT payment method was selected, pre-select BCT as the carbon token to offset
-  const getCarbonTokens = (paymentMethod: string) => {
+
+  // 2. Changing offset method option array according to which payment method was selected
+  // E.g. if BCT payment method was selected, pre-select "Specify BCT" as the offset method
+  const changeOptionsPaymentMethod = (paymentMethod: string) => {
     if (paymentMethod === "bct") {
       carbonTokens = [{ key: "BCT", value: "bct" }];
+      offsetMethods = [{ key: "Specify BCT", value: "bct" }];
     }
     if (paymentMethod === "nct") {
       carbonTokens = [{ key: "NCT", value: "nct" }];
+      offsetMethods = [{ key: "Specify NCT", value: "nct" }];
+    }
+    if (paymentMethod === "wmatic") {
+      carbonTokens = [
+        { key: "Select an option", value: "" },
+        { key: "BCT", value: "bct" },
+        { key: "NCT", value: "nct" },
+      ];
+      offsetMethods = [
+        { key: "Select an option", value: "" },
+        { key: "Specify BCT", value: "bct" },
+        { key: "Specify NCT", value: "nct" },
+        { key: "Specify WMATIC", value: "wmatic" },
+      ];
+    }
+    if (paymentMethod === "usdc") {
+      carbonTokens = [
+        { key: "Select an option", value: "" },
+        { key: "BCT", value: "bct" },
+        { key: "NCT", value: "nct" },
+      ];
+      offsetMethods = [
+        { key: "Select an option", value: "" },
+        { key: "Specify BCT", value: "bct" },
+        { key: "Specify NCT", value: "nct" },
+        { key: "Specify USDC", value: "usdc" },
+      ];
+    }
+    if (paymentMethod === "matic") {
+      carbonTokens = [
+        { key: "Select an option", value: "" },
+        { key: "BCT", value: "bct" },
+        { key: "NCT", value: "nct" },
+      ];
+      offsetMethods = [
+        { key: "Select an option", value: "" },
+        { key: "Specify BCT", value: "bct" },
+        { key: "Specify NCT", value: "nct" },
+        { key: "Specify MATIC", value: "matic" },
+      ];
     }
     if (paymentMethod === "") {
       carbonTokens = [
@@ -63,20 +108,6 @@ const FormikContainer = () => {
         { key: "BCT", value: "bct" },
         { key: "NCT", value: "nct" },
       ];
-    }
-    return carbonTokens;
-  };
-
-  // Changing offset method option array according to which payment method was selected
-  // E.g. if BCT payment method was selected, pre-select "Specify BCT" as the offset method
-  const getOffsetMethods = (paymentMethod: string) => {
-    if (paymentMethod === "bct") {
-      offsetMethods = [{ key: "Specify BCT", value: "bct" }];
-    }
-    if (paymentMethod === "nct") {
-      offsetMethods = [{ key: "Specify NCT", value: "nct" }];
-    }
-    if (paymentMethod === "") {
       offsetMethods = [
         { key: "Select an option", value: "" },
         { key: "Specify BCT", value: "bct" },
@@ -87,7 +118,101 @@ const FormikContainer = () => {
         { key: "Specify MATIC", value: "matic" },
       ];
     }
-    return offsetMethods;
+  };
+
+  // Changing offset method option array according to which carbon token & payment method was chosen
+  const changeOptionsCarbonToken = (
+    carbonToken: string,
+    paymentMethod: string
+  ) => {
+    if (paymentMethod === "wmatic") {
+      if (carbonToken === "bct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify BCT", value: "bct" },
+          { key: "Specify WMATIC", value: "wmatic" },
+        ];
+      }
+      if (carbonToken === "nct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify NCT", value: "nct" },
+          { key: "Specify WMATIC", value: "wmatic" },
+        ];
+      }
+    }
+    if (paymentMethod === "usdc") {
+      if (carbonToken === "bct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify BCT", value: "bct" },
+          { key: "Specify USDC", value: "usdc" },
+        ];
+      }
+      if (carbonToken === "nct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify NCT", value: "nct" },
+          { key: "Specify USDC", value: "usdc" },
+        ];
+      }
+    }
+    if (paymentMethod === "weth") {
+      if (carbonToken === "bct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify BCT", value: "bct" },
+          { key: "Specify WETH", value: "weth" },
+        ];
+      }
+      if (carbonToken === "nct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify NCT", value: "nct" },
+          { key: "Specify WETH", value: "weth" },
+        ];
+      }
+    }
+    if (paymentMethod === "matic") {
+      if (carbonToken === "bct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify BCT", value: "bct" },
+          { key: "Specify MATIC", value: "matic" },
+        ];
+      }
+      if (carbonToken === "nct") {
+        carbonTokens = [
+          { key: "BCT", value: "bct" },
+          { key: "NCT", value: "nct" },
+        ];
+        offsetMethods = [
+          { key: "Specify NCT", value: "nct" },
+          { key: "Specify MATIC", value: "matic" },
+        ];
+      }
+    }
   };
 
   return (
@@ -124,11 +249,12 @@ const FormikContainer = () => {
                 name="paymentMethod"
                 value={values.paymentMethod}
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                  // Changing carbon token array depending on which payment method is chosen
-                  getCarbonTokens(e.target.value);
-                  getOffsetMethods(e.target.value);
+                  // Changing subsequent select options depending on which payment method is chosen
+                  changeOptionsPaymentMethod(e.target.value);
+                  // getOffsetMethods(e.target.value);
                   setFieldValue("paymentMethod", e.target.value);
                   setFieldValue("carbonToken", e.target.value);
+                  setFieldValue("offsetMethod", e.target.value);
                 }}
               >
                 {paymentMethods?.map(
@@ -163,6 +289,14 @@ const FormikContainer = () => {
                 id="carbonToken"
                 name="carbonToken"
                 value={values.carbonToken}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  changeOptionsCarbonToken(
+                    e.target.value,
+                    values.paymentMethod
+                  );
+                  setFieldValue("carbonToken", e.target.value);
+                  setFieldValue("offsetMethod", e.target.value);
+                }}
               >
                 {carbonTokens?.map(
                   (carbonToken: { key: string; value: string }) => {
@@ -222,7 +356,7 @@ const FormikContainer = () => {
                 htmlFor="amountToOffset"
                 className="text-sm font-bold md:text-base text-fontPrimary dark:text-fontPrimaryDark"
               >
-                Select Amount to Offset
+                Select Amount of {values.offsetMethod.toUpperCase()} to Offset
               </label>
               <Field
                 id="amountToOffset"
