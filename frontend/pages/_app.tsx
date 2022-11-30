@@ -1,8 +1,45 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+"use client";
+
+import "../styles/globals.css";
+import type { AppProps } from "next/app";
+
+// Additional `rainbowkit` & `wagmi` setup
+import "@rainbow-me/rainbowkit/styles.css";
+import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { configureChains, createClient, WagmiConfig, chain } from "wagmi";
+import { publicProvider } from "wagmi/providers/public";
+
+// `chains` -> array of chains we want to support
+const { chains, provider } = configureChains(
+  [chain.polygonMumbai],
+  // ** What does this block even do?
+  [publicProvider()]
+);
+
+// `connectors` are the wallets we'll support
+const { connectors } = getDefaultWallets({
+  appName: "Offset Helper App",
+  chains,
+});
+
+// console.log("connectors:", connectors);
+
+// Initializing a wagmi client that combines all the above information, that RainbowKit
+// will use under the hood
+const wagmiClient = createClient({
+  autoConnect: true,
+  connectors,
+  provider,
+});
 
 function MyApp({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return (
+    <WagmiConfig client={wagmiClient}>
+      <RainbowKitProvider chains={chains}>
+        <Component {...pageProps} />
+      </RainbowKitProvider>
+    </WagmiConfig>
+  );
 }
 
-export default MyApp
+export default MyApp;

@@ -3,7 +3,6 @@
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { initialValuesProps } from "../../lib/types";
-import FormikControl from "./FormikControl";
 
 const FormikContainer = () => {
   const initialValues: initialValuesProps = {

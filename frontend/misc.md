@@ -28,3 +28,25 @@
               type="number"
               values={values}
             /> */}
+
+// Creating a config for Polygon's Mumbai Testnet chain (required by `rainbowkit` & `wagmi`)
+const polygonMumbaiChain = {
+id: 80001,
+name: "Polygon Mumbai Testnet",
+network: "mumbai",
+nativeCurrency: {
+decimals: 18,
+name: "Matic",
+symbol: "MATIC",
+},
+rpcUrls: {
+default: "https://matic-testnet-archive-rpc.bwarelabs.com",
+},
+blockExplorers: {
+default: {
+name: "Polygonscan",
+url: "https://mumbai.polygonscan.com",
+},
+},
+testnet: true,
+};
