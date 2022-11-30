@@ -1,6 +1,6 @@
 import { ErrorMessage, Field } from "formik";
 
-const Select = ({ label, name, options, ...rest }: any) => {
+const Select = ({ label, name, options, values, ...rest }: any) => {
   return (
     <div className="flex flex-col justify-between gap-2">
       <label
@@ -9,7 +9,14 @@ const Select = ({ label, name, options, ...rest }: any) => {
       >
         {label}
       </label>
-      <Field as="select" id={name} name={name} {...rest} className="input">
+      <Field
+        as="select"
+        id={name}
+        name={name}
+        {...rest}
+        className="input"
+        value={values.name}
+      >
         {options?.map((option: { key: string; value: string }) => {
           return (
             <option key={option.value} value={option.value}>

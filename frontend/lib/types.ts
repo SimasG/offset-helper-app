@@ -10,9 +10,12 @@ export type FormikControlSchema = {
     key: string;
     value: string;
   }[];
+  values: initialValuesProps;
 };
 
 export type initialValuesProps = {
   paymentMethod: string;
   carbonToken: string;
+  offsetMethod: string;
+  amountToOffset: number;
 };
