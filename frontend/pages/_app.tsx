@@ -1,5 +1,3 @@
-"use client";
-
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 
@@ -12,7 +10,6 @@ import { publicProvider } from "wagmi/providers/public";
 // `chains` -> array of chains we want to support
 const { chains, provider } = configureChains(
   [chain.polygonMumbai],
-  // ** What does this block even do?
   [publicProvider()]
 );
 
@@ -22,8 +19,6 @@ const { connectors } = getDefaultWallets({
   chains,
 });
 
-// console.log("connectors:", connectors);
-
 // Initializing a wagmi client that combines all the above information, that RainbowKit
 // will use under the hood
 const wagmiClient = createClient({
@@ -31,6 +26,8 @@ const wagmiClient = createClient({
   connectors,
   provider,
 });
+
+console.log(WagmiConfig);
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

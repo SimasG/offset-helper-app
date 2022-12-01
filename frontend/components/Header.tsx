@@ -1,13 +1,10 @@
-"use client";
-
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 // import * as wagmi from "wagmi";
 // console.log(wagmi);
 
 const Header = () => {
   return (
-    <div>
-      zdare
+    <div className="flex items-center justify-end p-4">
       <ConnectButton />
     </div>
   );
