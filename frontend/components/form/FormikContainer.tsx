@@ -1,6 +1,16 @@
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { initialValuesProps } from "../../lib/types";
+import {
+  useProvider,
+  useAccount,
+  useContract,
+  usePrepareContractWrite,
+  useContractWrite,
+} from "wagmi";
+import { mumbaiAddresses, OHMumbaiAddress } from "../../constants/constants";
+import { OffsetHelperABI } from "../../constants";
+import { ethers, BigNumber, FixedNumber } from "ethers"; // ** How am I using ethers without having it installed in my frontend here?
 
 const FormikContainer = () => {
   const initialValues: initialValuesProps = {
@@ -15,7 +25,10 @@ const FormikContainer = () => {
     offsetMethod: Yup.string().required("Required"),
     amountToOffset: Yup.number().required("Required"),
   });
-  const onSubmit = async (values: any) => console.log("Form data:", values);
+  const onSubmit = async (values: any) => {
+    console.log("Form data:", values);
+    offset(values.paymentMethod, values.offsetMethod, values.amountToOffset);
+  };
 
   // * Select options
   const paymentMethods: { key: string; value: string }[] = [
@@ -212,6 +225,69 @@ const FormikContainer = () => {
     }
   };
 
+  // * Blockchain-related functionality
+  // Get the provider, connected address, and a contract instance
+  // for the NFT contract using wagmi
+  const provider = useProvider();
+  const { address } = useAccount();
+
+  // Creating an instance of the `OffsetHelper.sol` contract
+  const OffsetHelperContract = useContract({
+    address: OHMumbaiAddress,
+    abi: OffsetHelperABI,
+    signerOrProvider: provider,
+  });
+
+  // If paymentMethod = BCT/NCT -> autoOffsetPoolToken()
+  // If paymentMethod = MATIC & offsetMethod = BCT/NCT -> autoOffsetExactOutETH()
+  // If paymentMethod = MATIC & offsetMethod = MATIC -> autoOffsetExactInETH()
+  // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = BCT/NCT -> autoOffsetExactOutToken()
+  // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = WMATIC/USDC/WETH -> autoOffsetExactInToken()
+  const offset = (
+    paymentMethod: string,
+    offsetMethod: string,
+    amountToOffset: number
+  ) => {
+    if (paymentMethod === "bct" || paymentMethod === "nct") {
+      console.log("trigger autoOffsetPoolToken()");
+    } else if (paymentMethod === "matic") {
+      if (offsetMethod === "bct" || offsetMethod === "nct") {
+        console.log("trigger autoOffsetExactOutETH()");
+        // autoOffsetExactOutETH(amountToOffset);
+        // ethers.utils.formatEther(amountToOffset.toString())
+        // const hey = ethers.utils.formatEther(amountToOffset.toString());
+      } else {
+        console.log("trigger autoOffsetExactInETH()");
+      }
+    } else if (
+      paymentMethod === "wmatic" ||
+      paymentMethod === "usdc" ||
+      paymentMethod === "weth"
+    ) {
+      if (offsetMethod === "bct" || offsetMethod === "nct") {
+        console.log("trigger autoOffsetExactOutToken()");
+      } else {
+        console.log("trigger autoOffsetExactInToken()");
+      }
+    }
+  };
+
+  const { config } = usePrepareContractWrite({
+    address: OHMumbaiAddress,
+    abi: OffsetHelperABI,
+    functionName: "autoOffsetExactOutETH",
+    args: [mumbaiAddresses.bct, FixedNumber.from("0.05")],
+  });
+
+  // const zdare = FixedNumber.from(0.05)
+  const { writeAsync } = useContractWrite(config);
+  console.log(config);
+
+  // const autoOffsetExactOutETH = async (amountToOffset: number) => {
+  //   await writeAsync?.();
+  //   console.log("writeAsync:", writeAsync);
+  // };
+
   return (
     <Formik
       initialValues={initialValues}
@@ -221,15 +297,7 @@ const FormikContainer = () => {
       validateOnBlur={false}
     >
       {(formik) => {
-        const {
-          values,
-          dirty,
-          isSubmitting,
-          handleChange,
-          handleSubmit,
-          handleReset,
-          setFieldValue,
-        } = formik;
+        const { values, setFieldValue } = formik;
         return (
           <Form>
             {/* Payment Method Manual Select */}
@@ -248,7 +316,6 @@ const FormikContainer = () => {
                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                   // Changing subsequent select options depending on which payment method is chosen
                   changeOptionsPaymentMethod(e.target.value);
-                  // getOffsetMethods(e.target.value);
                   setFieldValue("paymentMethod", e.target.value);
                   setFieldValue("carbonToken", e.target.value);
                   setFieldValue("offsetMethod", e.target.value);

@@ -14,6 +14,8 @@ const { chains, provider } = configureChains(
 );
 
 // `connectors` are the wallets we'll support
+// Creating a list of connectors we'll support on rainbowkit
+// & sharing the list with the wagmiClient
 const { connectors } = getDefaultWallets({
   appName: "Offset Helper App",
   chains,
@@ -26,8 +28,6 @@ const wagmiClient = createClient({
   connectors,
   provider,
 });
-
-console.log(WagmiConfig);
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
