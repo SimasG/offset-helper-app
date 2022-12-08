@@ -68,70 +68,77 @@ const MantineFormContainer = () => {
 
   // 2. Changing offset method option array according to which payment method was selected
   // E.g. if BCT payment method was selected, pre-select "Specify BCT" as the offset method
-  const changeOptionsPaymentMethod = (paymentMethod: string) => {
+  const changeOptionsPaymentMethod = (paymentMethod: any) => {
+    // console.log("form:", form);
     if (paymentMethod === "bct") {
+      form.setValues({
+        paymentMethod: "bct",
+        carbonToken: "bct",
+        offsetMethod: "bct",
+      });
+
       carbonTokens = [{ key: "BCT", value: "bct" }];
       offsetMethods = [{ key: "Specify BCT", value: "bct" }];
     }
-    if (paymentMethod === "nct") {
-      carbonTokens = [{ key: "NCT", value: "nct" }];
-      offsetMethods = [{ key: "Specify NCT", value: "nct" }];
-    }
-    if (paymentMethod === "wmatic") {
-      carbonTokens = [
-        { key: "Select an option", value: "" },
-        { key: "BCT", value: "bct" },
-        { key: "NCT", value: "nct" },
-      ];
-      offsetMethods = [
-        { key: "Select an option", value: "" },
-        { key: "Specify BCT", value: "bct" },
-        { key: "Specify NCT", value: "nct" },
-        { key: "Specify WMATIC", value: "wmatic" },
-      ];
-    }
-    if (paymentMethod === "usdc") {
-      carbonTokens = [
-        { key: "Select an option", value: "" },
-        { key: "BCT", value: "bct" },
-        { key: "NCT", value: "nct" },
-      ];
-      offsetMethods = [
-        { key: "Select an option", value: "" },
-        { key: "Specify BCT", value: "bct" },
-        { key: "Specify NCT", value: "nct" },
-        { key: "Specify USDC", value: "usdc" },
-      ];
-    }
-    if (paymentMethod === "matic") {
-      carbonTokens = [
-        { key: "Select an option", value: "" },
-        { key: "BCT", value: "bct" },
-        { key: "NCT", value: "nct" },
-      ];
-      offsetMethods = [
-        { key: "Select an option", value: "" },
-        { key: "Specify BCT", value: "bct" },
-        { key: "Specify NCT", value: "nct" },
-        { key: "Specify MATIC", value: "matic" },
-      ];
-    }
-    if (paymentMethod === "") {
-      carbonTokens = [
-        { key: "Select an option", value: "" },
-        { key: "BCT", value: "bct" },
-        { key: "NCT", value: "nct" },
-      ];
-      offsetMethods = [
-        { key: "Select an option", value: "" },
-        { key: "Specify BCT", value: "bct" },
-        { key: "Specify NCT", value: "nct" },
-        { key: "Specify WMATIC", value: "wmatic" },
-        { key: "Specify USDC", value: "usdc" },
-        { key: "Specify WETH", value: "weth" },
-        { key: "Specify MATIC", value: "matic" },
-      ];
-    }
+    // if (paymentMethod === "nct") {
+    //   carbonTokens = [{ key: "NCT", value: "nct" }];
+    //   offsetMethods = [{ key: "Specify NCT", value: "nct" }];
+    // }
+    // if (paymentMethod === "wmatic") {
+    //   carbonTokens = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "BCT", value: "bct" },
+    //     { key: "NCT", value: "nct" },
+    //   ];
+    //   offsetMethods = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "Specify BCT", value: "bct" },
+    //     { key: "Specify NCT", value: "nct" },
+    //     { key: "Specify WMATIC", value: "wmatic" },
+    //   ];
+    // }
+    // if (paymentMethod === "usdc") {
+    //   carbonTokens = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "BCT", value: "bct" },
+    //     { key: "NCT", value: "nct" },
+    //   ];
+    //   offsetMethods = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "Specify BCT", value: "bct" },
+    //     { key: "Specify NCT", value: "nct" },
+    //     { key: "Specify USDC", value: "usdc" },
+    //   ];
+    // }
+    // if (paymentMethod === "matic") {
+    //   carbonTokens = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "BCT", value: "bct" },
+    //     { key: "NCT", value: "nct" },
+    //   ];
+    //   offsetMethods = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "Specify BCT", value: "bct" },
+    //     { key: "Specify NCT", value: "nct" },
+    //     { key: "Specify MATIC", value: "matic" },
+    //   ];
+    // }
+    // if (paymentMethod === "") {
+    //   carbonTokens = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "BCT", value: "bct" },
+    //     { key: "NCT", value: "nct" },
+    //   ];
+    //   offsetMethods = [
+    //     { key: "Select an option", value: "" },
+    //     { key: "Specify BCT", value: "bct" },
+    //     { key: "Specify NCT", value: "nct" },
+    //     { key: "Specify WMATIC", value: "wmatic" },
+    //     { key: "Specify USDC", value: "usdc" },
+    //     { key: "Specify WETH", value: "weth" },
+    //     { key: "Specify MATIC", value: "matic" },
+    //   ];
+    // }
   };
 
   // Changing offset method option array according to which carbon token & payment method was chosen
@@ -379,55 +386,74 @@ const MantineFormContainer = () => {
 
   return (
     <>
-      <form onSubmit={(e) => onSubmit(e)}>
-        {/* Payment Method */}
-        <Select
-          label="Payment Method"
-          {...form.getInputProps("paymentMethod")}
-          data={[
-            { label: "BCT", value: "bct" },
-            { label: "NCT", value: "nct" },
-            { label: "WMATIC", value: "wmatic" },
-            { label: "USDC", value: "usdc" },
-            { label: "WETH", value: "weth" },
-            { label: "MATIC", value: "matic" },
-          ]}
-        />
+      <form
+        onSubmit={(e) => {
+          form.setValues(form.values);
+          onSubmit(e);
+        }}
+      >
+        {/* Input Container */}
+        <div className="flex flex-col gap-4">
+          {/* Payment Method */}
+          <Select
+            label="Payment Method"
+            {...form.getInputProps("paymentMethod")}
+            data={[
+              { label: "BCT", value: "bct" },
+              { label: "NCT", value: "nct" },
+              { label: "WMATIC", value: "wmatic" },
+              { label: "USDC", value: "usdc" },
+              { label: "WETH", value: "weth" },
+              { label: "MATIC", value: "matic" },
+            ]}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+              changeOptionsPaymentMethod(e);
+              // form.setValues({
+              //   paymentMethod: "bct",
+              //   carbonToken: "bct",
+              //   offsetMethod: "bct",
+              // paymentMethod: form.getInputProps("paymentMethod").value,
+              // carbonToken: form.getInputProps("paymentMethod").value,
+              // offsetMethod: form.getInputProps("paymentMethod").value,
+              // });
+            }}
+          />
 
-        {/* Carbon Token */}
-        <Select
-          label="Carbon Token to Offset"
-          {...form.getInputProps("carbonToken")}
-          data={[
-            { label: "Select an option", value: "" },
-            { label: "BCT", value: "bct" },
-            { label: "NCT", value: "nct" },
-          ]}
-        />
+          {/* Carbon Token */}
+          <Select
+            label="Carbon Token to Offset"
+            {...form.getInputProps("carbonToken")}
+            data={[
+              { label: "Select an option", value: "" },
+              { label: "BCT", value: "bct" },
+              { label: "NCT", value: "nct" },
+            ]}
+          />
 
-        {/* Offset Method */}
-        <Select
-          label="Select Offset Method"
-          {...form.getInputProps("offsetMethod")}
-          data={[
-            { label: "Select an option", value: "" },
-            { label: "Specify BCT", value: "bct" },
-            { label: "Specify NCT", value: "nct" },
-            { label: "Specify WMATIC", value: "wmatic" },
-            { label: "Specify USDC", value: "usdc" },
-            { label: "Specify WETH", value: "weth" },
-            { label: "Specify MATIC", value: "matic" },
-          ]}
-        />
+          {/* Offset Method */}
+          <Select
+            label="Select Offset Method"
+            {...form.getInputProps("offsetMethod")}
+            data={[
+              { label: "Select an option", value: "" },
+              { label: "Specify BCT", value: "bct" },
+              { label: "Specify NCT", value: "nct" },
+              { label: "Specify WMATIC", value: "wmatic" },
+              { label: "Specify USDC", value: "usdc" },
+              { label: "Specify WETH", value: "weth" },
+              { label: "Specify MATIC", value: "matic" },
+            ]}
+          />
 
-        {/* Amount to Offset */}
-        <NumberInput
-          label="Select Amount of TOKEN to Offset"
-          {...form.getInputProps("amountToOffset")}
-        />
+          {/* Amount to Offset */}
+          <NumberInput
+            label="Select Amount of TOKEN to Offset"
+            {...form.getInputProps("amountToOffset")}
+          />
+        </div>
 
         {/* Offset Button */}
-        <div className="mt-4 font-bold text-center">
+        <div className="mt-8 font-bold text-center">
           <button
             className="px-4 py-2 text-white bg-green-500 rounded-sm hover:bg-green-300 drop-shadow-lg"
             type="submit"
