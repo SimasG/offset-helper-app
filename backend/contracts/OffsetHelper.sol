@@ -139,10 +139,10 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
-    function autoOffsetPoolToken(address _poolToken, uint256 _amountToOffset)
-        public
-        returns (address[] memory tco2s, uint256[] memory amounts)
-    {
+    function autoOffsetPoolToken(
+        address _poolToken,
+        uint256 _amountToOffset
+    ) public returns (address[] memory tco2s, uint256[] memory amounts) {
         // deposit pool token from user to this contract
         deposit(_poolToken, _amountToOffset);
 
@@ -175,13 +175,16 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
-    // ** Why is it `payable`?
-    function autoOffsetExactOutETH(address _poolToken, uint256 _amountToOffset)
+    function autoOffsetExactOutETH(
+        address _poolToken,
+        uint256 _amountToOffset
+    )
         public
         payable
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap MATIC for BCT / NCT
+        // ** The problem is here
         swapExactOutETH(_poolToken, _amountToOffset);
 
         // redeem BCT / NCT for TCO2s
@@ -208,7 +211,9 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return tco2s An array of the TCO2 addresses that were redeemed
      * @return amounts An array of the amounts of each TCO2 that were redeemed
      */
-    function autoOffsetExactInETH(address _poolToken)
+    function autoOffsetExactInETH(
+        address _poolToken
+    )
         public
         payable
         returns (address[] memory tco2s, uint256[] memory amounts)
@@ -321,10 +326,10 @@ contract OffsetHelper is OffsetHelperStorage {
      * @notice Allow users to deposit BCT / NCT.
      * @dev Needs to be approved
      */
-    function deposit(address _erc20Addr, uint256 _amount)
-        public
-        onlyRedeemable(_erc20Addr)
-    {
+    function deposit(
+        address _erc20Addr,
+        uint256 _amount
+    ) public onlyRedeemable(_erc20Addr) {
         // * Checks-Effects-Interactions change
         // Although here it seems to not be a security issue since no
         // user in their right mind do a re-entrancy attack as it would
@@ -343,7 +348,10 @@ contract OffsetHelper is OffsetHelperStorage {
      */
     // ** Why `public`? Isn't `autoRedeem` only callable within other public
     // ** functions and hence have no reason to be public?
-    function autoRedeem(address _fromToken, uint256 _amount)
+    function autoRedeem(
+        address _fromToken,
+        uint256 _amount
+    )
         public
         onlyRedeemable(_fromToken)
         returns (address[] memory tco2s, uint256[] memory amounts)
@@ -378,9 +386,10 @@ contract OffsetHelper is OffsetHelperStorage {
      */
     // ** Why `public`? Isn't `autoRetire` only callable within other public
     // ** functions and hence have no reason to be public?
-    function autoRetire(address[] memory _tco2s, uint256[] memory _amounts)
-        public
-    {
+    function autoRetire(
+        address[] memory _tco2s,
+        uint256[] memory _amounts
+    ) public {
         uint256 tco2sLen = _tco2s.length;
         require(tco2sLen != 0, "Array empty");
         require(tco2sLen == _amounts.length, "Arrays unequal");
@@ -408,11 +417,10 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _toToken Token to swap for (will be held within contract)
      * @param _toAmount Amount of NCT / BCT wanted
      */
-    function swapExactOutETH(address _toToken, uint256 _toAmount)
-        public
-        payable
-        onlyRedeemable(_toToken)
-    {
+    function swapExactOutETH(
+        address _toToken,
+        uint256 _toAmount
+    ) public payable onlyRedeemable(_toToken) {
         // calculate path & amounts
         address fromToken = eligibleTokenAddresses["WMATIC"];
         address[] memory path = generatePath(fromToken, _toToken);
@@ -442,12 +450,9 @@ contract OffsetHelper is OffsetHelperStorage {
         balances[msg.sender][_toToken] += _toAmount;
     }
 
-    function swapExactInETH(address _toToken)
-        public
-        payable
-        onlyRedeemable(_toToken)
-        returns (uint256)
-    {
+    function swapExactInETH(
+        address _toToken
+    ) public payable onlyRedeemable(_toToken) returns (uint256) {
         // calculate path & amounts
         address fromToken = eligibleTokenAddresses["WMATIC"];
         address[] memory path = generatePath(fromToken, _toToken);
@@ -569,11 +574,10 @@ contract OffsetHelper is OffsetHelperStorage {
     }
 
     // ** Why not `private`?
-    function generatePath(address _fromToken, address _toToken)
-        internal
-        view
-        returns (address[] memory)
-    {
+    function generatePath(
+        address _fromToken,
+        address _toToken
+    ) internal view returns (address[] memory) {
         if (_fromToken == eligibleTokenAddresses["USDC"]) {
             address[] memory path = new address[](2);
             path[0] = _fromToken;
@@ -656,12 +660,10 @@ contract OffsetHelper is OffsetHelperStorage {
      * @return amounts The amount of MATIC required in order to swap for
      * the specified amount of the pool token
      */
-    function calculateNeededETHAmount(address _toToken, uint256 _toAmount)
-        public
-        view
-        onlyRedeemable(_toToken)
-        returns (uint256)
-    {
+    function calculateNeededETHAmount(
+        address _toToken,
+        uint256 _toAmount
+    ) public view onlyRedeemable(_toToken) returns (uint256) {
         address fromToken = eligibleTokenAddresses["WMATIC"];
         (, uint256[] memory amounts) = calculateExactOutSwap(
             fromToken,
@@ -771,11 +773,9 @@ contract OffsetHelper is OffsetHelperStorage {
      * @notice Delete eligible tokens stored in the contract.
      * @param _tokenSymbol The symbol of the token to remove
      */
-    function deleteEligibleTokenAddress(string memory _tokenSymbol)
-        public
-        virtual
-        onlyOwner
-    {
+    function deleteEligibleTokenAddress(
+        string memory _tokenSymbol
+    ) public virtual onlyOwner {
         delete eligibleTokenAddresses[_tokenSymbol];
     }
 
@@ -784,11 +784,9 @@ contract OffsetHelper is OffsetHelperStorage {
      * @param _address The address of the Toucan contract registry to use
      */
     // ** Why `public`?
-    function setToucanContractRegistry(address _address)
-        public
-        virtual
-        onlyOwner
-    {
+    function setToucanContractRegistry(
+        address _address
+    ) public virtual onlyOwner {
         contractRegistryAddress = _address;
     }
 

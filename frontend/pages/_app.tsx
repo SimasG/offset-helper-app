@@ -1,20 +1,22 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
+import { Lato } from "@next/font/google";
 
 // Additional `rainbowkit` & `wagmi` setup
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { configureChains, createClient, WagmiConfig, chain } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
+import { alchemyProvider } from "wagmi/providers/alchemy";
 
-// `chains` -> array of chains we want to support
+// Connecting chains we support with providers we have
 const { chains, provider } = configureChains(
-  [chain.polygonMumbai],
+  [chain.polygon, chain.polygonMumbai],
   [publicProvider()]
 );
 
 // `connectors` are the wallets we'll support
-// Creating a list of connectors we'll support on rainbowkit
+// Creating a list of connectors we'll support on RainbowKit
 // & sharing the list with the wagmiClient
 const { connectors } = getDefaultWallets({
   appName: "Offset Helper App",
@@ -29,11 +31,19 @@ const wagmiClient = createClient({
   provider,
 });
 
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-lato",
+});
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={wagmiClient}>
       <RainbowKitProvider chains={chains}>
-        <Component {...pageProps} />
+        <main className={lato.className}>
+          <Component {...pageProps} />
+        </main>
       </RainbowKitProvider>
     </WagmiConfig>
   );

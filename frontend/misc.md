@@ -50,3 +50,28 @@ url: "https://mumbai.polygonscan.com",
 },
 testnet: true,
 };
+
+// Get the provider, connected address, and a contract instance
+// for the NFT contract using wagmi
+const provider = useProvider();
+const { address } = useAccount();
+
+// Creating an instance of the `OffsetHelper.sol` contract
+const OffsetHelperContract = useContract({
+address: OHMumbaiAddress,
+abi: OffsetHelperABI,
+signerOrProvider: provider,
+});
+
+const { config } = usePrepareContractWrite({
+// ** Why can I initiate (an incorrect) tx in Polygon Mainnet with Mumbai addresses?
+// ** Why can't I initiate a tx in Polygon Mainnet with Mainnet addresses?
+address: OHPolygonAddress,
+abi: OffsetHelperABI,
+functionName: "autoOffsetExactOutETH",
+// ** How can I specify `amountToOffset` before user filling
+// ** in the form & actually specifying it?
+args: [addresses.bct, FixedNumber.from("0")],
+});
+
+const { write: autoOffsetExactOutETH } = useContractWrite(config);

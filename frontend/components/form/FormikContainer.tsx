@@ -8,9 +8,15 @@ import {
   usePrepareContractWrite,
   useContractWrite,
 } from "wagmi";
-import { mumbaiAddresses, OHMumbaiAddress } from "../../constants/constants";
+import addresses, {
+  mumbaiAddresses,
+  OHMumbaiAddress,
+  OHPolygonAddress,
+} from "../../constants/constants";
 import { OffsetHelperABI } from "../../constants";
-import { ethers, BigNumber, FixedNumber } from "ethers"; // ** How am I using ethers without having it installed in my frontend here?
+import { ethers, BigNumber, FixedNumber, Contract } from "ethers"; // ** How am I using ethers without having it installed in my frontend here?
+import { parseUnits } from "ethers/lib/utils.js";
+import { Select } from "@mantine/core";
 
 const FormikContainer = () => {
   const initialValues: initialValuesProps = {
@@ -226,18 +232,6 @@ const FormikContainer = () => {
   };
 
   // * Blockchain-related functionality
-  // Get the provider, connected address, and a contract instance
-  // for the NFT contract using wagmi
-  const provider = useProvider();
-  const { address } = useAccount();
-
-  // Creating an instance of the `OffsetHelper.sol` contract
-  const OffsetHelperContract = useContract({
-    address: OHMumbaiAddress,
-    abi: OffsetHelperABI,
-    signerOrProvider: provider,
-  });
-
   // If paymentMethod = BCT/NCT -> autoOffsetPoolToken()
   // If paymentMethod = MATIC & offsetMethod = BCT/NCT -> autoOffsetExactOutETH()
   // If paymentMethod = MATIC & offsetMethod = MATIC -> autoOffsetExactInETH()
@@ -249,15 +243,17 @@ const FormikContainer = () => {
     amountToOffset: number
   ) => {
     if (paymentMethod === "bct" || paymentMethod === "nct") {
+      // ** Can't test it out atm
       console.log("trigger autoOffsetPoolToken()");
     } else if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // * Doesn't work
         console.log("trigger autoOffsetExactOutETH()");
-        // autoOffsetExactOutETH(amountToOffset);
-        // ethers.utils.formatEther(amountToOffset.toString())
-        // const hey = ethers.utils.formatEther(amountToOffset.toString());
+        autoOffsetExactOutETH(offsetMethod, amountToOffset);
       } else {
+        // * Works
         console.log("trigger autoOffsetExactInETH()");
+        autoOffsetExactInETH(offsetMethod, amountToOffset);
       }
     } else if (
       paymentMethod === "wmatic" ||
@@ -265,28 +261,117 @@ const FormikContainer = () => {
       paymentMethod === "weth"
     ) {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // * Doesn't work
         console.log("trigger autoOffsetExactOutToken()");
+        // autoOffsetExactOutToken(paymentMethod, offsetMethod, amountToOffset);
       } else {
         console.log("trigger autoOffsetExactInToken()");
+        // * Doesn't work
+        autoOffsetExactInToken(paymentMethod, offsetMethod, amountToOffset);
       }
     }
   };
 
-  const { config } = usePrepareContractWrite({
-    address: OHMumbaiAddress,
-    abi: OffsetHelperABI,
-    functionName: "autoOffsetExactOutETH",
-    args: [mumbaiAddresses.bct, FixedNumber.from("0.05")],
-  });
+  // ** `UNPREDICTABLE_GAS_LIMIT` if amountToOffset is > 0
+  // `UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT` if amountToOffset is 0. Oke, I just can't have an input of 0, makes sense.
+  // const autoOffsetExactOutToken = async (
+  //   paymentMethod: string,
+  //   offsetMethod: string,
+  //   amountToOffset: number
+  // ) => {
+  //   const { ethereum } = window;
+  //   // @ts-ignore
+  //   const provider = new ethers.providers.Web3Provider(ethereum);
+  //   const signer = provider.getSigner();
 
-  // const zdare = FixedNumber.from(0.05)
-  const { writeAsync } = useContractWrite(config);
-  console.log(config);
+  //   const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
-  // const autoOffsetExactOutETH = async (amountToOffset: number) => {
-  //   await writeAsync?.();
-  //   console.log("writeAsync:", writeAsync);
+  //   const depositedToken =
+  //     paymentMethod === "wmatic"
+  //       ? addresses.wmatic
+  //       : paymentMethod === "usdc"
+  //       ? addresses.usdc
+  //       : paymentMethod === "weth"
+  //       ? addresses.weth
+  //       : null;
+
+  //   const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+  //   const offsetTx = await oh.autoOffsetExactOutToken(
+  //     depositedToken,
+  //     poolToken,
+  //     FixedNumber.from(amountToOffset.toString())
+  //   );
+  //   await offsetTx.wait();
+  //   console.log("offset hash", offsetTx.hash);
   // };
+
+  // ** `UniswapV2Router: EXCESSIVE_INPUT_AMOUNT` if amountToOffset is > 0.
+  //  `UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT` if amountToOffset is 0. Oke, I just can't have an input of 0, makes sense.
+  const autoOffsetExactOutETH = async (
+    offsetMethod: string,
+    amountToOffset: number
+  ) => {
+    const { ethereum } = window;
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
+
+    const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+    const offsetTx = await oh.autoOffsetExactOutETH(
+      poolToken,
+      FixedNumber.from(amountToOffset.toString())
+    );
+    await offsetTx.wait();
+    console.log("offset hash", offsetTx.hash);
+  };
+
+  const autoOffsetExactInETH = async (
+    offsetMethod: string,
+    amountToOffset: number
+  ) => {
+    const { ethereum } = window;
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
+
+    const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+    const offsetTx = await oh.autoOffsetExactInETH(poolToken, {
+      value: ethers.utils.parseUnits("0.01", "ether"),
+    });
+    await offsetTx.wait();
+    console.log("offset hash", offsetTx.hash);
+  };
+
+  // ** `UNPREDICTABLE_GAS_LIMIT` if amountToOffset is >= 0
+  const autoOffsetExactInToken = async (
+    paymentMethod: string,
+    offsetMethod: string,
+    amountToOffset: number
+  ) => {
+    const { ethereum } = window;
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
+
+    const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+    const offsetTx = await oh.autoOffsetExactInToken(
+      addresses[paymentMethod],
+      FixedNumber.from(amountToOffset.toString()),
+      poolToken
+    );
+    await offsetTx.wait();
+    console.log("offset hash", offsetTx.hash);
+  };
 
   return (
     <Formik

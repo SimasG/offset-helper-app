@@ -6,6 +6,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@mantine/core": "^5.9.2",
+    "@next/font": "^13.0.6",
     "@rainbow-me/rainbowkit": "^0.8.0",
     "dotenv": "^16.0.3",
     "ethers": "^5.7.2",

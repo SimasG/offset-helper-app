@@ -68,8 +68,7 @@ describe("OffsetHelper", function () {
       ]
     );
 
-    // Connecting factory contracts with different signers
-    // ** How are we able to use interfaces instead of the actual contracts?
+    // Instantiating contracts & connecting them with different signers
     bct = IToucanPoolToken__factory.connect(addresses.bct, addr2);
     nct = IToucanPoolToken__factory.connect(addresses.nct, addr2);
     usdc = IERC20__factory.connect(addresses.usdc, addr2);
@@ -712,7 +711,7 @@ describe("OffsetHelper", function () {
     });
 
     it("Should fail to deposit because we have no NCT", async function () {
-      const { offsetHelper, nct, addrs } = await loadFixture(
+      const { offsetHelper, addrs } = await loadFixture(
         deployOffsetHelperFixture
       );
 
