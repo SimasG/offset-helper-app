@@ -18,9 +18,36 @@ import { parseUnits } from "ethers/lib/utils.js";
 import { Select, NumberInput } from "@mantine/core";
 
 import { useForm } from "@mantine/form";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 
 const MantineFormContainer = () => {
+  const [carbonTokens, setCarbonTokens] = useState<
+    { label: string; value: string }[]
+  >([
+    { label: "BCT", value: "bct" },
+    { label: "NCT", value: "nct" },
+  ]);
+
+  const [offsetMethods, setOffsetMethods] = useState<
+    { label: string; value: string }[]
+  >([
+    { label: "Specify BCT", value: "bct" },
+    { label: "Specify NCT", value: "nct" },
+    { label: "Specify WMATIC", value: "wmatic" },
+    { label: "Specify USDC", value: "usdc" },
+    { label: "Specify WETH", value: "weth" },
+    { label: "Specify MATIC", value: "matic" },
+  ]);
+
+  const paymentMethods: { label: string; value: string }[] = [
+    { label: "BCT", value: "bct" },
+    { label: "NCT", value: "nct" },
+    { label: "WMATIC", value: "wmatic" },
+    { label: "USDC", value: "usdc" },
+    { label: "WETH", value: "weth" },
+    { label: "MATIC", value: "matic" },
+  ];
+
   const form = useForm({
     initialValues: {
       paymentMethod: "",
@@ -33,30 +60,6 @@ const MantineFormContainer = () => {
     // validate: {
     // }
   });
-
-  // * Select options
-  const paymentMethods: { label: string; value: string }[] = [
-    { label: "BCT", value: "bct" },
-    { label: "NCT", value: "nct" },
-    { label: "WMATIC", value: "wmatic" },
-    { label: "USDC", value: "usdc" },
-    { label: "WETH", value: "weth" },
-    { label: "MATIC", value: "matic" },
-  ];
-
-  let carbonTokens: { label: string; value: string }[] = [
-    { label: "BCT", value: "bct" },
-    { label: "NCT", value: "nct" },
-  ];
-
-  let offsetMethods: { label: string; value: string }[] = [
-    { label: "Specify BCT", value: "bct" },
-    { label: "Specify NCT", value: "nct" },
-    { label: "Specify WMATIC", value: "wmatic" },
-    { label: "Specify USDC", value: "usdc" },
-    { label: "Specify WETH", value: "weth" },
-    { label: "Specify MATIC", value: "matic" },
-  ];
 
   // * Functions
 
@@ -72,166 +75,52 @@ const MantineFormContainer = () => {
         carbonToken: paymentMethod,
         offsetMethod: paymentMethod,
       });
-      carbonTokens = [
+      setCarbonTokens([
         { label: paymentMethod.toUpperCase(), value: paymentMethod },
-      ];
-      offsetMethods = [
+      ]);
+      setOffsetMethods([
         {
           label: `Specify ${paymentMethod.toUpperCase()}`,
           value: paymentMethod,
         },
-      ];
+      ]);
+    } else {
+      form.setValues({
+        paymentMethod: paymentMethod,
+        offsetMethod: paymentMethod,
+        carbonToken: "",
+      });
+      setCarbonTokens([
+        { label: "BCT", value: "bct" },
+        { label: "NCT", value: "nct" },
+      ]);
+      setOffsetMethods([
+        { label: "Specify BCT", value: "bct" },
+        { label: "Specify NCT", value: "nct" },
+        {
+          label: `Specify ${paymentMethod.toUpperCase()}`,
+          value: paymentMethod,
+        },
+      ]);
     }
-    // if (paymentMethod === "wmatic") {
-    //   carbonTokens = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "BCT", value: "bct" },
-    //     { label: "NCT", value: "nct" },
-    //   ];
-    //   offsetMethods = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "Specify BCT", value: "bct" },
-    //     { label: "Specify NCT", value: "nct" },
-    //     { label: "Specify WMATIC", value: "wmatic" },
-    //   ];
-    // }
-    // if (paymentMethod === "usdc") {
-    //   carbonTokens = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "BCT", value: "bct" },
-    //     { label: "NCT", value: "nct" },
-    //   ];
-    //   offsetMethods = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "Specify BCT", value: "bct" },
-    //     { label: "Specify NCT", value: "nct" },
-    //     { label: "Specify USDC", value: "usdc" },
-    //   ];
-    // }
-    // if (paymentMethod === "matic") {
-    //   carbonTokens = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "BCT", value: "bct" },
-    //     { label: "NCT", value: "nct" },
-    //   ];
-    //   offsetMethods = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "Specify BCT", value: "bct" },
-    //     { label: "Specify NCT", value: "nct" },
-    //     { label: "Specify MATIC", value: "matic" },
-    //   ];
-    // }
-    // if (paymentMethod === "") {
-    //   carbonTokens = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "BCT", value: "bct" },
-    //     { label: "NCT", value: "nct" },
-    //   ];
-    //   offsetMethods = [
-    //     { label: "Select an option", value: "" },
-    //     { label: "Specify BCT", value: "bct" },
-    //     { label: "Specify NCT", value: "nct" },
-    //     { label: "Specify WMATIC", value: "wmatic" },
-    //     { label: "Specify USDC", value: "usdc" },
-    //     { label: "Specify WETH", value: "weth" },
-    //     { label: "Specify MATIC", value: "matic" },
-    //   ];
-    // }
   };
 
   // Changing offset method option array according to which carbon token & payment method was chosen
-  const changeOptionsCarbonToken = (
-    carbonToken: string,
-    paymentMethod: string
-  ) => {
-    if (paymentMethod === "wmatic") {
-      if (carbonToken === "bct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify BCT", value: "bct" },
-          { label: "Specify WMATIC", value: "wmatic" },
-        ];
-      }
-      if (carbonToken === "nct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify NCT", value: "nct" },
-          { label: "Specify WMATIC", value: "wmatic" },
-        ];
-      }
-    }
-    if (paymentMethod === "usdc") {
-      if (carbonToken === "bct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify BCT", value: "bct" },
-          { label: "Specify USDC", value: "usdc" },
-        ];
-      }
-      if (carbonToken === "nct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify NCT", value: "nct" },
-          { label: "Specify USDC", value: "usdc" },
-        ];
-      }
-    }
-    if (paymentMethod === "weth") {
-      if (carbonToken === "bct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify BCT", value: "bct" },
-          { label: "Specify WETH", value: "weth" },
-        ];
-      }
-      if (carbonToken === "nct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify NCT", value: "nct" },
-          { label: "Specify WETH", value: "weth" },
-        ];
-      }
-    }
-    if (paymentMethod === "matic") {
-      if (carbonToken === "bct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify BCT", value: "bct" },
-          { label: "Specify MATIC", value: "matic" },
-        ];
-      }
-      if (carbonToken === "nct") {
-        carbonTokens = [
-          { label: "BCT", value: "bct" },
-          { label: "NCT", value: "nct" },
-        ];
-        offsetMethods = [
-          { label: "Specify NCT", value: "nct" },
-          { label: "Specify MATIC", value: "matic" },
-        ];
-      }
-    }
+  const handleCarbonToken = (paymentMethod: string, carbonToken: string) => {
+    form.setValues({
+      carbonToken: carbonToken,
+      offsetMethod: carbonToken,
+    });
+    setOffsetMethods([
+      {
+        label: `Specify ${carbonToken.toUpperCase()}`,
+        value: carbonToken,
+      },
+      {
+        label: `Specify ${paymentMethod.toUpperCase()}`,
+        value: paymentMethod,
+      },
+    ]);
   };
 
   // * Blockchain-related functionality
@@ -401,11 +290,6 @@ const MantineFormContainer = () => {
             value={form.values.paymentMethod}
             onChange={(e: string) => {
               handlePaymentMethod(e);
-              // form.setValues({
-              //   paymentMethod: e,
-              //   carbonToken: e,
-              //   offsetMethod: e,
-              // });
             }}
           />
 
@@ -417,11 +301,7 @@ const MantineFormContainer = () => {
             data={carbonTokens}
             value={form.values.carbonToken}
             onChange={(e: string) => {
-              changeOptionsCarbonToken(e, form.values.paymentMethod);
-              form.setValues({
-                carbonToken: e,
-                offsetMethod: e,
-              });
+              handleCarbonToken(form.values.paymentMethod, e);
             }}
           />
 
@@ -439,7 +319,7 @@ const MantineFormContainer = () => {
 
           {/* Amount to Offset */}
           <NumberInput
-            label="Select Amount of TOKEN to Offset"
+            label={`Select Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
           />
         </div>
