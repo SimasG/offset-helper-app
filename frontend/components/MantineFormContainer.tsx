@@ -15,10 +15,12 @@ import addresses, {
 import { OffsetHelperABI } from "../constants";
 import { ethers, BigNumber, FixedNumber, Contract } from "ethers"; // ** How am I using ethers without having it installed in my frontend here?
 import { parseUnits } from "ethers/lib/utils.js";
-import { Select, NumberInput } from "@mantine/core";
 
+import { Select, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { FormEvent, useState } from "react";
+import { showNotification } from "@mantine/notifications";
+
+import { useState } from "react";
 
 const MantineFormContainer = () => {
   const [carbonTokens, setCarbonTokens] = useState<
@@ -53,12 +55,17 @@ const MantineFormContainer = () => {
       paymentMethod: "",
       carbonToken: "",
       offsetMethod: "",
-      amountToOffset: "",
+      amountToOffset: 0,
     },
 
-    // ** Validate later
-    // validate: {
-    // }
+    validateInputOnChange: true,
+
+    validate: {
+      paymentMethod: (value) => (value === "" ? `Required` : null),
+      carbonToken: (value) => (value === "" ? `Required` : null),
+      offsetMethod: (value) => (value === "" ? `Required` : null),
+      amountToOffset: (value) => (value <= 0 || !value ? `Required` : null),
+    },
   });
 
   // * Functions
@@ -265,20 +272,29 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("Form data:", form.values);
+  const handleSubmit = async (values: typeof form.values) => {
+    console.log("Form data:", values);
     // offset(values.paymentMethod, values.offsetMethod, values.amountToOffset);
+  };
+
+  const handleError = (errors: typeof form.errors) => {
+    if (errors.paymentMethod) {
+      showNotification({ message: "Required boyy", color: "red" });
+    }
+    if (errors.carbonToken) {
+      showNotification({ message: "Required boyy", color: "red" });
+    }
+    if (errors.offsetMethod) {
+      showNotification({ message: "Required boyy", color: "red" });
+    }
+    if (errors.amountToOffset) {
+      showNotification({ message: "Required boyy", color: "red" });
+    }
   };
 
   return (
     <>
-      <form
-        onSubmit={(e) => {
-          form.setValues(form.values);
-          onSubmit(e);
-        }}
-      >
+      <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
         {/* Input Container */}
         <div className="flex flex-col gap-4">
           {/* Payment Method */}
