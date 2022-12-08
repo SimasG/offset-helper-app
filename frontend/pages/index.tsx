@@ -11,7 +11,7 @@ const Home: NextPage = () => {
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Header />
-      <div className="absolute flex flex-col items-center justify-start w-full h-full gap-10">
+      <div className="absolute flex flex-col items-center justify-start w-full h-full gap-10 bg-blue-100">
         <div className="flex flex-col items-center justify-center gap-5">
           <h1 className="text-5xl font-bold">Offset Your Emissions Easily</h1>
           <p className="text-lg font-bold">

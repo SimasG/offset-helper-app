@@ -17,6 +17,7 @@ import { OffsetHelperABI } from "../../constants";
 import { ethers, BigNumber, FixedNumber, Contract } from "ethers"; // ** How am I using ethers without having it installed in my frontend here?
 import { parseUnits } from "ethers/lib/utils.js";
 import { Select } from "@mantine/core";
+import SelectComponent from "./SelectComponent";
 
 const FormikContainer = () => {
   const initialValues: initialValuesProps = {
@@ -385,6 +386,39 @@ const FormikContainer = () => {
         const { values, setFieldValue } = formik;
         return (
           <Form>
+            {/* Test Select */}
+            <div className="flex flex-col justify-between gap-2">
+              <label
+                className="text-sm font-bold text-fontPrimary dark:text-fontPrimaryDark"
+                htmlFor="paymentMethod"
+              >
+                Test Label
+              </label>
+              <Field
+                as={SelectComponent}
+                id="paymentMethod"
+                name="paymentMethod"
+              >
+                {paymentMethods?.map(
+                  (paymentMethod: { key: string; value: string }) => {
+                    return (
+                      <option
+                        key={paymentMethod.value}
+                        value={paymentMethod.value}
+                      >
+                        {paymentMethod.key}
+                      </option>
+                    );
+                  }
+                )}
+              </Field>
+              <ErrorMessage
+                name="paymentMethod"
+                component="p"
+                className="font-medium text-red-400"
+              />
+            </div>
+
             {/* Payment Method Manual Select */}
             <div className="flex flex-col justify-between gap-2">
               <label
