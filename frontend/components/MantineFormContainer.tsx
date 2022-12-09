@@ -21,6 +21,7 @@ import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 const MantineFormContainer = () => {
   const [carbonTokens, setCarbonTokens] = useState<
@@ -116,18 +117,53 @@ const MantineFormContainer = () => {
   const handleCarbonToken = (paymentMethod: string, carbonToken: string) => {
     form.setValues({
       carbonToken: carbonToken,
-      offsetMethod: carbonToken,
     });
-    setOffsetMethods([
-      {
-        label: `Specify ${carbonToken.toUpperCase()}`,
-        value: carbonToken,
-      },
-      {
-        label: `Specify ${paymentMethod.toUpperCase()}`,
-        value: paymentMethod,
-      },
-    ]);
+
+    !paymentMethod
+      ? setOffsetMethods([
+          {
+            label: `Specify ${carbonToken.toUpperCase()}`,
+            value: carbonToken,
+          },
+        ])
+      : setOffsetMethods([
+          {
+            label: `Specify ${carbonToken.toUpperCase()}`,
+            value: carbonToken,
+          },
+          {
+            label: `Specify ${paymentMethod.toUpperCase()}`,
+            value: paymentMethod,
+          },
+        ]);
+  };
+
+  const handleOffsetMethod = (
+    paymentMethod: string,
+    carbonToken: string,
+    offsetMethod: string
+  ) => {
+    if (offsetMethod === "bct" || offsetMethod === "nct") {
+      form.setValues({
+        paymentMethod: offsetMethod,
+        carbonToken: offsetMethod,
+        offsetMethod: offsetMethod,
+      });
+
+      setCarbonTokens([
+        { label: offsetMethod.toUpperCase(), value: offsetMethod },
+      ]);
+    } else {
+      form.setValues({
+        paymentMethod: offsetMethod,
+        offsetMethod: offsetMethod,
+      });
+
+      setCarbonTokens([
+        { label: "BCT", value: "bct" },
+        { label: "NCT", value: "nct" },
+      ]);
+    }
   };
 
   // * Blockchain-related functionality
@@ -275,26 +311,34 @@ const MantineFormContainer = () => {
   const handleSubmit = async (values: typeof form.values) => {
     console.log("Form data:", values);
     // offset(values.paymentMethod, values.offsetMethod, values.amountToOffset);
+    toast.success(
+      `${
+        form.values.amountToOffset
+      } ${form.values.paymentMethod.toUpperCase()} has been offset!`
+    );
   };
 
   const handleError = (errors: typeof form.errors) => {
     if (errors.paymentMethod) {
-      showNotification({ message: "Required boyy", color: "red" });
+      showNotification({ message: "Required input", color: "red" });
     }
     if (errors.carbonToken) {
-      showNotification({ message: "Required boyy", color: "red" });
+      showNotification({ message: "Required input", color: "red" });
     }
     if (errors.offsetMethod) {
-      showNotification({ message: "Required boyy", color: "red" });
+      showNotification({ message: "Required input", color: "red" });
     }
     if (errors.amountToOffset) {
-      showNotification({ message: "Required boyy", color: "red" });
+      showNotification({ message: "Required input", color: "red" });
     }
   };
 
   return (
     <>
-      <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
+      <form
+        onSubmit={form.onSubmit(handleSubmit, handleError)}
+        className="px-20 py-10 bg-white rounded-lg shadow-lg drop-shadow-md shadow-[#d4eed4]"
+      >
         {/* Input Container */}
         <div className="flex flex-col gap-4">
           {/* Payment Method */}
@@ -329,7 +373,11 @@ const MantineFormContainer = () => {
             data={offsetMethods}
             value={form.values.offsetMethod}
             onChange={(e: string) => {
-              form.setFieldValue("offsetMethod", e);
+              handleOffsetMethod(
+                form.values.paymentMethod,
+                form.values.carbonToken,
+                e
+              );
             }}
           />
 

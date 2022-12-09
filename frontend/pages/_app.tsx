@@ -1,6 +1,7 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { Lato } from "@next/font/google";
+import { Toaster } from "react-hot-toast";
 
 // Additional `rainbowkit` & `wagmi` setup
 import "@rainbow-me/rainbowkit/styles.css";
@@ -40,6 +41,15 @@ const lato = Lato({
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={wagmiClient}>
+      <Toaster
+        toastOptions={{
+          className: "",
+          style: {
+            fontFamily: "lato",
+            fontWeight: "medium",
+          },
+        }}
+      />
       <RainbowKitProvider chains={chains}>
         <main className={lato.className}>
           <Component {...pageProps} />
