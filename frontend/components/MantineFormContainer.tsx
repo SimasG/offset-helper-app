@@ -70,7 +70,6 @@ const MantineFormContainer = () => {
   });
 
   // * Functions
-
   // 1. Changing carbon token to offset option array according to which payment method was selected
   // E.g. if BCT payment method was selected, pre-select BCT as the carbon token to offset
 
@@ -96,7 +95,6 @@ const MantineFormContainer = () => {
       form.setValues({
         paymentMethod: paymentMethod,
         offsetMethod: paymentMethod,
-        carbonToken: "",
       });
       setCarbonTokens([
         { label: "BCT", value: "bct" },
@@ -117,45 +115,38 @@ const MantineFormContainer = () => {
   const handleCarbonToken = (paymentMethod: string, carbonToken: string) => {
     form.setValues({
       carbonToken: carbonToken,
+      offsetMethod: carbonToken,
     });
 
-    !paymentMethod
-      ? setOffsetMethods([
-          {
-            label: `Specify ${carbonToken.toUpperCase()}`,
-            value: carbonToken,
-          },
-        ])
-      : setOffsetMethods([
-          {
-            label: `Specify ${carbonToken.toUpperCase()}`,
-            value: carbonToken,
-          },
-          {
-            label: `Specify ${paymentMethod.toUpperCase()}`,
-            value: paymentMethod,
-          },
-        ]);
+    if (!paymentMethod) {
+      setOffsetMethods([
+        {
+          label: `Specify ${carbonToken.toUpperCase()}`,
+          value: carbonToken,
+        },
+      ]);
+    } else {
+      setOffsetMethods([
+        {
+          label: `Specify ${carbonToken.toUpperCase()}`,
+          value: carbonToken,
+        },
+        {
+          label: `Specify ${paymentMethod.toUpperCase()}`,
+          value: paymentMethod,
+        },
+      ]);
+    }
   };
 
-  const handleOffsetMethod = (
-    paymentMethod: string,
-    carbonToken: string,
-    offsetMethod: string
-  ) => {
+  const handleOffsetMethod = (offsetMethod: string) => {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
       form.setValues({
-        paymentMethod: offsetMethod,
         carbonToken: offsetMethod,
         offsetMethod: offsetMethod,
       });
-
-      setCarbonTokens([
-        { label: offsetMethod.toUpperCase(), value: offsetMethod },
-      ]);
     } else {
       form.setValues({
-        paymentMethod: offsetMethod,
         offsetMethod: offsetMethod,
       });
 
@@ -184,17 +175,13 @@ const MantineFormContainer = () => {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
         // * Doesn't work
         console.log("trigger autoOffsetExactOutETH()");
-        autoOffsetExactOutETH(offsetMethod, amountToOffset);
+        // autoOffsetExactOutETH(offsetMethod, amountToOffset);
       } else {
         // * Works
         console.log("trigger autoOffsetExactInETH()");
         autoOffsetExactInETH(offsetMethod, amountToOffset);
       }
-    } else if (
-      paymentMethod === "wmatic" ||
-      paymentMethod === "usdc" ||
-      paymentMethod === "weth"
-    ) {
+    } else {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
         // * Doesn't work
         console.log("trigger autoOffsetExactOutToken()");
@@ -202,7 +189,7 @@ const MantineFormContainer = () => {
       } else {
         console.log("trigger autoOffsetExactInToken()");
         // * Doesn't work
-        autoOffsetExactInToken(paymentMethod, offsetMethod, amountToOffset);
+        // autoOffsetExactInToken(paymentMethod, offsetMethod, amountToOffset);
       }
     }
   };
@@ -248,11 +235,16 @@ const MantineFormContainer = () => {
     amountToOffset: number
   ) => {
     const { ethereum } = window;
+    console.log("ethereum:", ethereum);
     // @ts-ignore
     const provider = new ethers.providers.Web3Provider(ethereum);
+    console.log("provider:", provider);
+
     const signer = provider.getSigner();
+    console.log("signer:", signer);
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
+    console.log("Offset Helper contract instance:", oh);
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
 
@@ -310,6 +302,7 @@ const MantineFormContainer = () => {
 
   const handleSubmit = async (values: typeof form.values) => {
     console.log("Form data:", values);
+    console.log("window:", window);
     // offset(values.paymentMethod, values.offsetMethod, values.amountToOffset);
     toast.success(
       `${
@@ -373,11 +366,7 @@ const MantineFormContainer = () => {
             data={offsetMethods}
             value={form.values.offsetMethod}
             onChange={(e: string) => {
-              handleOffsetMethod(
-                form.values.paymentMethod,
-                form.values.carbonToken,
-                e
-              );
+              handleOffsetMethod(e);
             }}
           />
 
