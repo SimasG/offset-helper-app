@@ -12,12 +12,12 @@ const Home: NextPage = () => {
       </Head>
       <Header />
       <div className="absolute flex flex-col items-center justify-start w-full h-full gap-20">
-        <div className="flex flex-col items-center justify-center gap-5">
-          <h1 className="text-5xl font-bold">
+        <div className="flex flex-col items-center justify-center gap-5 p-5">
+          <h1 className="text-5xl font-bold text-center">
             Offset Your <span className="text-red-500">Emissions</span> Easily
             🌱
           </h1>
-          <p className="text-lg font-bold">
+          <p className="text-lg font-bold text-center">
             Effortlessly retire carbon credits with our Offset Helper
           </p>
         </div>
