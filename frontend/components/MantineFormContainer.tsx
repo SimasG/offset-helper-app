@@ -330,7 +330,7 @@ const MantineFormContainer = () => {
     <>
       <form
         onSubmit={form.onSubmit(handleSubmit, handleError)}
-        className="px-20 py-10 bg-white rounded-lg shadow-lg drop-shadow-md shadow-[#d4eed4]"
+        className="px-14 py-7 sm:px-20 sm:py-10 bg-white rounded-lg shadow-lg drop-shadow-md shadow-[#d4eed4]"
       >
         {/* Input Container */}
         <div className="flex flex-col gap-4">
@@ -344,6 +344,7 @@ const MantineFormContainer = () => {
             onChange={(e: string) => {
               handlePaymentMethod(e);
             }}
+            className="text-5xl"
           />
 
           {/* Carbon Token */}
@@ -360,7 +361,7 @@ const MantineFormContainer = () => {
 
           {/* Offset Method */}
           <Select
-            label="Select Offset Method"
+            label="Offset Method"
             placeholder="Select an option"
             {...form.getInputProps("offsetMethod")}
             data={offsetMethods}
@@ -372,7 +373,7 @@ const MantineFormContainer = () => {
 
           {/* Amount to Offset */}
           <NumberInput
-            label={`Select Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
+            label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
           />
         </div>
