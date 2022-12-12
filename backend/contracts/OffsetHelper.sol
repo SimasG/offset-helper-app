@@ -422,6 +422,7 @@ contract OffsetHelper is OffsetHelperStorage {
         uint256 _toAmount
     ) public payable onlyRedeemable(_toToken) {
         // calculate path & amounts
+        // ** Why are we using WMATIC token when we're supposed to be using MATIC?
         address fromToken = eligibleTokenAddresses["WMATIC"];
         address[] memory path = generatePath(fromToken, _toToken);
 
@@ -429,6 +430,8 @@ contract OffsetHelper is OffsetHelperStorage {
         // Why are we using `call{}` here? Because we're sending the native Polygon Mainnet currency (MATIC)
         // ** `swapETHForExactTokens()` requires first address in the path to be WETH but we use MATIC here
         // ** How does this work?
+
+        // ** Where do I specify `msg.value`? This could be the reason for errors.
         uint256[] memory amounts = routerSushi().swapETHForExactTokens{
             value: msg.value
         }(_toAmount, path, address(this), block.timestamp);
