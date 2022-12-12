@@ -14,13 +14,13 @@ import addresses, {
 } from "../constants/constants";
 import { OffsetHelperABI } from "../constants";
 import { ethers, BigNumber, FixedNumber, Contract } from "ethers"; // ** How am I using ethers without having it installed in my frontend here?
-import { parseUnits } from "ethers/lib/utils.js";
+import { formatEther, parseEther, parseUnits } from "ethers/lib/utils.js";
 
 import { Select, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const MantineFormContainer = () => {
@@ -70,6 +70,28 @@ const MantineFormContainer = () => {
   });
 
   const { isConnected } = useAccount();
+
+  let estimate: string;
+
+  useEffect(() => {
+    const runHandleEstimate = async () => {
+      if (
+        form.values.paymentMethod &&
+        form.values.carbonToken &&
+        form.values.amountToOffset &&
+        form.values.offsetMethod
+      ) {
+        estimate = await handleEstimate(
+          form.values.paymentMethod,
+          form.values.carbonToken,
+          form.values.amountToOffset,
+          form.values.offsetMethod
+        );
+      }
+      console.log("estimate:", estimate);
+    };
+    runHandleEstimate();
+  }, [form.values]);
 
   // * Functions
   // 1. Changing carbon token to offset option array according to which payment method was selected
@@ -307,7 +329,7 @@ const MantineFormContainer = () => {
   };
 
   // * Offset Estimates
-  const handleEstimate = (
+  const handleEstimate = async (
     paymentMethod: string,
     carbonToken: string,
     amountToOffset: number,
@@ -315,42 +337,25 @@ const MantineFormContainer = () => {
   ) => {
     if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        // calculateNeededETHAmount()
         // paymentMethod: MATIC
         // offsetMethod: Specify BCT/NCT
+        const expectedEthAmount = await calculateNeededETHAmount(
+          carbonToken,
+          ethers.utils.parseEther(amountToOffset.toString())
+        );
+
+        console.log("expectedEthAmount:", expectedEthAmount);
+        return expectedEthAmount;
       } else if (offsetMethod === "matic") {
-        // calculateExpectedPoolTokenForETH()
         // paymentMethod: MATIC
         // offsetMethod: Specify MATIC
-        const calculateExpectedPoolTokenForETH = async (
-          amountToOffset: number,
-          carbonToken: string
-        ) => {
-          // @ts-ignore
-          const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const expectedPoolTokensForEth = await calculateExpectedPoolTokenForETH(
+          ethers.utils.parseEther(amountToOffset.toString()),
+          carbonToken
+        );
 
-          const oh = new ethers.Contract(
-            OHPolygonAddress,
-            OffsetHelperABI,
-            provider
-          );
-
-          const poolToken =
-            carbonToken === "bct" ? addresses.bct : addresses.nct;
-
-          // form.values.paymentMethod, form.values.amountToOffset, form.values.carbonToken
-          // address _fromToken,
-          // uint256 _fromAmount,
-          // address _toToken
-
-          const expectedPoolTokensForEth: number =
-            await oh.calculateExpectedPoolTokenForETH(
-              amountToOffset,
-              poolToken
-            );
-          console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
-          return expectedPoolTokensForEth;
-        };
+        console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
+        return expectedPoolTokensForEth;
       }
     } else if (
       paymentMethod === "wmatic" ||
@@ -358,29 +363,144 @@ const MantineFormContainer = () => {
       paymentMethod === "weth"
     ) {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        // calculateNeededTokenAmount()
+        // ** Doesn't work
         // paymentMethod: WMATIC/USDC/WETH
         // offsetMethod: Specify BCT/NCT
+        const neededTokenAmount = await calculateNeededTokenAmount(
+          paymentMethod,
+          carbonToken,
+          ethers.utils.parseEther(amountToOffset.toString())
+        );
+
+        console.log("neededTokenAmount:", neededTokenAmount);
+        return neededTokenAmount;
       } else if (
         offsetMethod === "wmatic" ||
         offsetMethod === "usdc" ||
         offsetMethod === "weth"
       ) {
-        // calculateExpectedPoolTokenForToken()
-        // paymentMethod: WMATIC/USDC/WETH
         // offsetMethod: Specify WMATIC/USDC/WETH
+        // paymentMethod: WMATIC/USDC/WETH
+        const expectedPoolTokenForToken =
+          await calculateExpectedPoolTokenForToken(
+            paymentMethod,
+            ethers.utils.parseEther(amountToOffset.toString()),
+            carbonToken
+          );
+        console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
+        return expectedPoolTokenForToken;
       }
     }
+    return "zdare4";
+  };
+
+  const calculateExpectedPoolTokenForETH = async (
+    amountToOffset: BigNumber,
+    carbonToken: string
+  ) => {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+
+    const expectedPoolTokensForEthRaw: BigNumber =
+      await oh.calculateExpectedPoolTokenForETH(amountToOffset, poolToken);
+
+    const expectedPoolTokensForEth = (
+      parseInt(expectedPoolTokensForEthRaw.toString()) /
+      10 ** 18
+    ).toFixed(2);
+
+    return expectedPoolTokensForEth;
+  };
+
+  const calculateNeededETHAmount = async (
+    carbonToken: string,
+    amountToOffset: BigNumber
+  ) => {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+
+    const expectedEthAmountRaw: BigNumber = await oh.calculateNeededETHAmount(
+      poolToken,
+      amountToOffset
+    );
+
+    const expectedEthAmount = (
+      parseInt(expectedEthAmountRaw.toString()) /
+      10 ** 18
+    ).toFixed(2);
+
+    return expectedEthAmount;
+  };
+
+  const calculateNeededTokenAmount = async (
+    paymentMethod: string,
+    carbonToken: string,
+    amountToOffset: BigNumber
+  ) => {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+
+    const fromToken = addresses[paymentMethod];
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+
+    const neededTokenAmountRaw: BigNumber = await oh.calculateNeededTokenAmount(
+      fromToken,
+      poolToken,
+      amountToOffset
+    );
+
+    const neededTokenAmount = (
+      parseInt(neededTokenAmountRaw.toString()) /
+      10 ** 18
+    ).toFixed(2);
+
+    return neededTokenAmount;
+  };
+
+  const calculateExpectedPoolTokenForToken = async (
+    paymentMethod: string,
+    amountToOffset: BigNumber,
+    carbonToken: string
+  ) => {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+
+    const fromToken = addresses[paymentMethod];
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+
+    const expectedPoolTokenForTokenRaw: BigNumber =
+      await oh.calculateNeededTokenAmount(fromToken, amountToOffset, poolToken);
+
+    const expectedPoolTokenForToken = (
+      parseInt(expectedPoolTokenForTokenRaw.toString()) /
+      10 ** 18
+    ).toFixed(2);
+
+    return expectedPoolTokenForToken;
   };
 
   const handleSubmit = async (values: typeof form.values) => {
     if (isConnected) {
-      offset(values.paymentMethod, values.offsetMethod, values.amountToOffset);
-      toast.success(
-        `${
-          form.values.amountToOffset
-        } ${form.values.paymentMethod.toUpperCase()} has been offset!`
-      );
+      {
+        // offset(values.paymentMethod, values.offsetMethod, values.amountToOffset);
+        // toast.success(
+        //   `${
+        //     form.values.amountToOffset
+        //   } ${form.values.paymentMethod.toUpperCase()} has been offset!`
+        // );
+      }
     } else {
       toast.error("Connect to a Wallet first!");
     }
@@ -451,21 +571,34 @@ const MantineFormContainer = () => {
             label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
           />
-
-          {/* MATIC -> BCT/NCT = calculateExpectedPoolTokenForETH() */}
-          {/* WMATIC/USDC/WETH = calculateExpectedPoolTokenForToken() */}
-          <p className="text-[14px] text-gray-400">
-            <>
-              BCT/NCT offset estimates:
-              {handleEstimate(
-                form.values.paymentMethod,
-                form.values.carbonToken,
-                form.values.amountToOffset,
-                form.values.offsetMethod
-              )}
-            </>
-          </p>
         </div>
+
+        {form.values.offsetMethod && form.values.paymentMethod && (
+          <>
+            {(form.values.paymentMethod === "bct" &&
+              form.values.offsetMethod === "bct") ||
+            (form.values.paymentMethod === "nct" &&
+              form.values.offsetMethod === "nct") ? null : (
+              <>
+                {(form.values.paymentMethod === "matic" ||
+                  form.values.paymentMethod === "wmatic" ||
+                  form.values.paymentMethod === "usdc" ||
+                  form.values.paymentMethod === "weth") &&
+                (form.values.offsetMethod === "bct" ||
+                  form.values.offsetMethod === "nct") ? (
+                  <p className="text-[14px] text-gray-400 pt-1">
+                    Estimated cost: X {form.values.paymentMethod.toUpperCase()}
+                  </p>
+                ) : (
+                  <p className="text-[14px] text-gray-400 pt-1">
+                    Equivalent to offsetting X{" "}
+                    {form.values.carbonToken.toUpperCase()}
+                  </p>
+                )}
+              </>
+            )}
+          </>
+        )}
 
         {/* Offset Button */}
         <div className="mt-8 font-bold text-center">
