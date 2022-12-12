@@ -255,7 +255,7 @@ const MantineFormContainer = () => {
 
     const offsetTx = await oh.autoOffsetExactOutETH(
       poolToken,
-      FixedNumber.from(amountToOffset.toString())
+      ethers.utils.parseUnits(amountToOffset.toString(), "ether")
     );
     await offsetTx.wait();
     console.log("offset hash", offsetTx.hash);
@@ -304,6 +304,73 @@ const MantineFormContainer = () => {
     );
     await offsetTx.wait();
     console.log("offset hash", offsetTx.hash);
+  };
+
+  // * Offset Estimates
+  const handleEstimate = (
+    paymentMethod: string,
+    carbonToken: string,
+    amountToOffset: number,
+    offsetMethod: string
+  ) => {
+    if (paymentMethod === "matic") {
+      if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // calculateNeededETHAmount()
+        // paymentMethod: MATIC
+        // offsetMethod: Specify BCT/NCT
+      } else if (offsetMethod === "matic") {
+        // calculateExpectedPoolTokenForETH()
+        // paymentMethod: MATIC
+        // offsetMethod: Specify MATIC
+        const calculateExpectedPoolTokenForETH = async (
+          amountToOffset: number,
+          carbonToken: string
+        ) => {
+          // @ts-ignore
+          const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+          const oh = new ethers.Contract(
+            OHPolygonAddress,
+            OffsetHelperABI,
+            provider
+          );
+
+          const poolToken =
+            carbonToken === "bct" ? addresses.bct : addresses.nct;
+
+          // form.values.paymentMethod, form.values.amountToOffset, form.values.carbonToken
+          // address _fromToken,
+          // uint256 _fromAmount,
+          // address _toToken
+
+          const expectedPoolTokensForEth: number =
+            await oh.calculateExpectedPoolTokenForETH(
+              amountToOffset,
+              poolToken
+            );
+          console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
+          return expectedPoolTokensForEth;
+        };
+      }
+    } else if (
+      paymentMethod === "wmatic" ||
+      paymentMethod === "usdc" ||
+      paymentMethod === "weth"
+    ) {
+      if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // calculateNeededTokenAmount()
+        // paymentMethod: WMATIC/USDC/WETH
+        // offsetMethod: Specify BCT/NCT
+      } else if (
+        offsetMethod === "wmatic" ||
+        offsetMethod === "usdc" ||
+        offsetMethod === "weth"
+      ) {
+        // calculateExpectedPoolTokenForToken()
+        // paymentMethod: WMATIC/USDC/WETH
+        // offsetMethod: Specify WMATIC/USDC/WETH
+      }
+    }
   };
 
   const handleSubmit = async (values: typeof form.values) => {
@@ -384,6 +451,20 @@ const MantineFormContainer = () => {
             label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
           />
+
+          {/* MATIC -> BCT/NCT = calculateExpectedPoolTokenForETH() */}
+          {/* WMATIC/USDC/WETH = calculateExpectedPoolTokenForToken() */}
+          <p className="text-[14px] text-gray-400">
+            <>
+              BCT/NCT offset estimates:
+              {handleEstimate(
+                form.values.paymentMethod,
+                form.values.carbonToken,
+                form.values.amountToOffset,
+                form.values.offsetMethod
+              )}
+            </>
+          </p>
         </div>
 
         {/* Offset Button */}
