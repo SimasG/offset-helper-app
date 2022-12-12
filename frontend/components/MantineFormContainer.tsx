@@ -344,7 +344,7 @@ const MantineFormContainer = () => {
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-        console.log("expectedEthAmount:", expectedEthAmount);
+        // console.log("expectedEthAmount:", expectedEthAmount);
         return expectedEthAmount;
       } else if (offsetMethod === "matic") {
         // paymentMethod: MATIC
@@ -354,7 +354,7 @@ const MantineFormContainer = () => {
           carbonToken
         );
 
-        console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
+        // console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
         return expectedPoolTokensForEth;
       }
     } else if (
@@ -372,13 +372,14 @@ const MantineFormContainer = () => {
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-        console.log("neededTokenAmount:", neededTokenAmount);
+        // console.log("neededTokenAmount:", neededTokenAmount);
         return neededTokenAmount;
       } else if (
         offsetMethod === "wmatic" ||
         offsetMethod === "usdc" ||
         offsetMethod === "weth"
       ) {
+        // ** Doesn't work
         // offsetMethod: Specify WMATIC/USDC/WETH
         // paymentMethod: WMATIC/USDC/WETH
         const expectedPoolTokenForToken =
@@ -387,7 +388,7 @@ const MantineFormContainer = () => {
             ethers.utils.parseEther(amountToOffset.toString()),
             carbonToken
           );
-        console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
+        // console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
         return expectedPoolTokenForToken;
       }
     }
@@ -570,6 +571,9 @@ const MantineFormContainer = () => {
           <NumberInput
             label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
+            min={0}
+            precision={2}
+            removeTrailingZeros={true}
           />
         </div>
 
@@ -587,7 +591,7 @@ const MantineFormContainer = () => {
                 (form.values.offsetMethod === "bct" ||
                   form.values.offsetMethod === "nct") ? (
                   <p className="text-[14px] text-gray-400 pt-1">
-                    Estimated cost: X {form.values.paymentMethod.toUpperCase()}
+                    Estimated cost: {form.values.paymentMethod.toUpperCase()}
                   </p>
                 ) : (
                   <p className="text-[14px] text-gray-400 pt-1">
