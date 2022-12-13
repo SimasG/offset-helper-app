@@ -23,7 +23,6 @@ import { sum as sumBN } from "../utils/bignumber";
 
 const ONE_ETHER = parseEther("1.0");
 
-// ** Is parsing USDC to 6 decimals instead of 18 just a matter of convention?
 function parseUSDC(s: string): BigNumber {
   return parseUnits(s, 6);
 }

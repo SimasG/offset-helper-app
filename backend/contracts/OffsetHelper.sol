@@ -427,10 +427,10 @@ contract OffsetHelper is OffsetHelperStorage {
         address[] memory path = generatePath(fromToken, _toToken);
 
         // swap
-        // Why are we using `call{}` here? Because we're sending the native Polygon Mainnet currency (MATIC)
         // ** `swapETHForExactTokens()` requires first address in the path to be WETH but we use MATIC here
         // ** How does this work?
 
+        // ** Don't I need to approve the transfer of my MATIC first?
         // ** Where do I specify `msg.value`? This could be the reason for errors.
         uint256[] memory amounts = routerSushi().swapETHForExactTokens{
             value: msg.value
