@@ -93,16 +93,6 @@ const MantineFormContainer = () => {
       // console.log("estimate:", estimate);
     };
     runHandleEstimate();
-    console.log(
-      "paymentMethod:",
-      form.values.paymentMethod,
-      "carbonToken:",
-      form.values.carbonToken,
-      "amountToOffset:",
-      form.values.amountToOffset,
-      "offsetMethod:",
-      form.values.offsetMethod
-    );
   }, [form.values]);
 
   // * Functions
@@ -356,17 +346,6 @@ const MantineFormContainer = () => {
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-        console.log(
-          "paymentMethod:",
-          paymentMethod,
-          "carbonToken:",
-          carbonToken,
-          "amountToOffset:",
-          amountToOffset,
-          "offsetMethod:",
-          offsetMethod
-        );
-        console.log("expectedEthAmount:", expectedEthAmount);
         return expectedEthAmount;
       } else if (offsetMethod === "matic") {
         // paymentMethod: MATIC
@@ -376,17 +355,6 @@ const MantineFormContainer = () => {
           carbonToken
         );
 
-        console.log(
-          "paymentMethod:",
-          paymentMethod,
-          "carbonToken:",
-          carbonToken,
-          "amountToOffset:",
-          amountToOffset,
-          "offsetMethod:",
-          offsetMethod
-        );
-        console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
         return expectedPoolTokensForEth;
       }
     } else if (
@@ -395,7 +363,6 @@ const MantineFormContainer = () => {
       paymentMethod === "weth"
     ) {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        // ** Works but breaks after switching payment methods
         // paymentMethod: WMATIC/USDC/WETH
         // offsetMethod: Specify BCT/NCT
         const neededTokenAmount = await calculateNeededTokenAmount(
@@ -404,43 +371,21 @@ const MantineFormContainer = () => {
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-        console.log(
-          "paymentMethod:",
-          paymentMethod,
-          "carbonToken:",
-          carbonToken,
-          "amountToOffset:",
-          amountToOffset,
-          "offsetMethod:",
-          offsetMethod
-        );
-        console.log("neededTokenAmount:", neededTokenAmount);
         return neededTokenAmount;
       } else if (
         offsetMethod === "wmatic" ||
         offsetMethod === "usdc" ||
         offsetMethod === "weth"
       ) {
-        // ** Works but breaks after switching payment methods
         // offsetMethod: Specify WMATIC/USDC/WETH
         // paymentMethod: WMATIC/USDC/WETH
         const expectedPoolTokenForToken =
           await calculateExpectedPoolTokenForToken(
             paymentMethod,
-            ethers.utils.parseEther(amountToOffset.toString()),
-            carbonToken
+            carbonToken,
+            ethers.utils.parseEther(amountToOffset.toString())
           );
 
-        console.log(
-          "paymentMethod:",
-          paymentMethod,
-          "carbonToken:",
-          carbonToken,
-          "amountToOffset:",
-          amountToOffset,
-          "offsetMethod:",
-          offsetMethod
-        );
         console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
         return expectedPoolTokenForToken;
       }
@@ -524,8 +469,8 @@ const MantineFormContainer = () => {
 
   const calculateExpectedPoolTokenForToken = async (
     paymentMethod: string,
-    amountToOffset: BigNumber,
-    carbonToken: string
+    carbonToken: string,
+    amountToOffset: BigNumber
   ) => {
     // @ts-ignore
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -533,15 +478,32 @@ const MantineFormContainer = () => {
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
 
     const fromToken = addresses[paymentMethod];
+
     const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
     const expectedPoolTokenForTokenRaw: BigNumber =
-      await oh.calculateNeededTokenAmount(fromToken, amountToOffset, poolToken);
+      await oh.calculateExpectedPoolTokenForToken(
+        fromToken,
+        amountToOffset,
+        poolToken
+      );
 
     const expectedPoolTokenForToken = (
       parseInt(expectedPoolTokenForTokenRaw.toString()) /
       10 ** 18
     ).toFixed(2);
+
+    // USDC has 6 decimals unlike other ERC20s that have 18
+    // const expectedPoolTokenForToken =
+    //   paymentMethod === "usdc"
+    //     ? (
+    //         parseInt(expectedPoolTokenForTokenRaw.toString()) /
+    //         10 ** 18
+    //       ).toFixed(2)
+    //     : (
+    //         parseInt(expectedPoolTokenForTokenRaw.toString()) /
+    //         10 ** 18
+    //       ).toFixed(2);
 
     return expectedPoolTokenForToken;
   };
