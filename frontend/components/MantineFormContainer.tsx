@@ -87,10 +87,22 @@ const MantineFormContainer = () => {
             form.values.offsetMethod
           )
         );
+      } else {
+        setEstimate("");
       }
-      console.log("estimate:", estimate);
+      // console.log("estimate:", estimate);
     };
     runHandleEstimate();
+    console.log(
+      "paymentMethod:",
+      form.values.paymentMethod,
+      "carbonToken:",
+      form.values.carbonToken,
+      "amountToOffset:",
+      form.values.amountToOffset,
+      "offsetMethod:",
+      form.values.offsetMethod
+    );
   }, [form.values]);
 
   // * Functions
@@ -344,7 +356,17 @@ const MantineFormContainer = () => {
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-        // console.log("expectedEthAmount:", expectedEthAmount);
+        console.log(
+          "paymentMethod:",
+          paymentMethod,
+          "carbonToken:",
+          carbonToken,
+          "amountToOffset:",
+          amountToOffset,
+          "offsetMethod:",
+          offsetMethod
+        );
+        console.log("expectedEthAmount:", expectedEthAmount);
         return expectedEthAmount;
       } else if (offsetMethod === "matic") {
         // paymentMethod: MATIC
@@ -354,7 +376,17 @@ const MantineFormContainer = () => {
           carbonToken
         );
 
-        // console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
+        console.log(
+          "paymentMethod:",
+          paymentMethod,
+          "carbonToken:",
+          carbonToken,
+          "amountToOffset:",
+          amountToOffset,
+          "offsetMethod:",
+          offsetMethod
+        );
+        console.log("expectedPoolTokensForEth:", expectedPoolTokensForEth);
         return expectedPoolTokensForEth;
       }
     } else if (
@@ -372,7 +404,17 @@ const MantineFormContainer = () => {
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-        // console.log("neededTokenAmount:", neededTokenAmount);
+        console.log(
+          "paymentMethod:",
+          paymentMethod,
+          "carbonToken:",
+          carbonToken,
+          "amountToOffset:",
+          amountToOffset,
+          "offsetMethod:",
+          offsetMethod
+        );
+        console.log("neededTokenAmount:", neededTokenAmount);
         return neededTokenAmount;
       } else if (
         offsetMethod === "wmatic" ||
@@ -388,7 +430,18 @@ const MantineFormContainer = () => {
             ethers.utils.parseEther(amountToOffset.toString()),
             carbonToken
           );
-        // console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
+
+        console.log(
+          "paymentMethod:",
+          paymentMethod,
+          "carbonToken:",
+          carbonToken,
+          "amountToOffset:",
+          amountToOffset,
+          "offsetMethod:",
+          offsetMethod
+        );
+        console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
         return expectedPoolTokenForToken;
       }
     }
@@ -586,24 +639,26 @@ const MantineFormContainer = () => {
             (form.values.paymentMethod === "nct" &&
               form.values.offsetMethod === "nct") ? null : (
               <>
-                {/* Fix logic here */}
-                {(form.values.paymentMethod === "matic" ||
-                  form.values.paymentMethod === "wmatic" ||
-                  form.values.paymentMethod === "usdc" ||
-                  form.values.paymentMethod === "weth") &&
-                (form.values.offsetMethod === "bct" ||
-                  form.values.offsetMethod === "nct") &&
-                form.values.carbonToken !== "" ? (
-                  <p className="text-[14px] text-gray-400 pt-1">
-                    Estimated cost: {estimate}{" "}
-                    {form.values.paymentMethod.toUpperCase()}
-                  </p>
-                ) : (
-                  <p className="text-[14px] text-gray-400 pt-1">
-                    Equivalent to offsetting {estimate}{" "}
-                    {form.values.carbonToken.toUpperCase()}
-                  </p>
-                )}
+                {form.values.carbonToken !== "" &&
+                form.values.amountToOffset !== 0 &&
+                form.values.amountToOffset !== undefined ? (
+                  (form.values.paymentMethod === "matic" ||
+                    form.values.paymentMethod === "wmatic" ||
+                    form.values.paymentMethod === "usdc" ||
+                    form.values.paymentMethod === "weth") &&
+                  (form.values.offsetMethod === "bct" ||
+                    form.values.offsetMethod === "nct") ? (
+                    <p className="text-[14px] text-gray-400 pt-1">
+                      Estimated cost: {estimate}{" "}
+                      {form.values.paymentMethod.toUpperCase()}
+                    </p>
+                  ) : (
+                    <p className="text-[14px] text-gray-400 pt-1">
+                      Equivalent to offsetting {estimate}{" "}
+                      {form.values.carbonToken.toUpperCase()}
+                    </p>
+                  )
+                ) : null}
               </>
             )}
           </>
