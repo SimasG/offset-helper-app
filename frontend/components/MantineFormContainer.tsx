@@ -30,7 +30,6 @@ const MantineFormContainer = () => {
     { label: "BCT", value: "bct" },
     { label: "NCT", value: "nct" },
   ]);
-
   const [offsetMethods, setOffsetMethods] = useState<
     { label: string; value: string }[]
   >([
@@ -41,6 +40,7 @@ const MantineFormContainer = () => {
     { label: "Specify WETH", value: "weth" },
     { label: "Specify MATIC", value: "matic" },
   ]);
+  const [estimate, setEstimate] = useState<string>("");
 
   const paymentMethods: { label: string; value: string }[] = [
     { label: "BCT", value: "bct" },
@@ -71,8 +71,6 @@ const MantineFormContainer = () => {
 
   const { isConnected } = useAccount();
 
-  let estimate: string;
-
   useEffect(() => {
     const runHandleEstimate = async () => {
       if (
@@ -81,11 +79,13 @@ const MantineFormContainer = () => {
         form.values.amountToOffset &&
         form.values.offsetMethod
       ) {
-        estimate = await handleEstimate(
-          form.values.paymentMethod,
-          form.values.carbonToken,
-          form.values.amountToOffset,
-          form.values.offsetMethod
+        setEstimate(
+          await handleEstimate(
+            form.values.paymentMethod,
+            form.values.carbonToken,
+            form.values.amountToOffset,
+            form.values.offsetMethod
+          )
         );
       }
       console.log("estimate:", estimate);
@@ -363,7 +363,7 @@ const MantineFormContainer = () => {
       paymentMethod === "weth"
     ) {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        // ** Doesn't work
+        // ** Works but breaks after switching payment methods
         // paymentMethod: WMATIC/USDC/WETH
         // offsetMethod: Specify BCT/NCT
         const neededTokenAmount = await calculateNeededTokenAmount(
@@ -379,7 +379,7 @@ const MantineFormContainer = () => {
         offsetMethod === "usdc" ||
         offsetMethod === "weth"
       ) {
-        // ** Doesn't work
+        // ** Works but breaks after switching payment methods
         // offsetMethod: Specify WMATIC/USDC/WETH
         // paymentMethod: WMATIC/USDC/WETH
         const expectedPoolTokenForToken =
@@ -392,29 +392,7 @@ const MantineFormContainer = () => {
         return expectedPoolTokenForToken;
       }
     }
-    return "zdare4";
-  };
-
-  const calculateExpectedPoolTokenForETH = async (
-    amountToOffset: BigNumber,
-    carbonToken: string
-  ) => {
-    // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
-
-    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
-
-    const expectedPoolTokensForEthRaw: BigNumber =
-      await oh.calculateExpectedPoolTokenForETH(amountToOffset, poolToken);
-
-    const expectedPoolTokensForEth = (
-      parseInt(expectedPoolTokensForEthRaw.toString()) /
-      10 ** 18
-    ).toFixed(2);
-
-    return expectedPoolTokensForEth;
+    return "";
   };
 
   const calculateNeededETHAmount = async (
@@ -441,6 +419,28 @@ const MantineFormContainer = () => {
     return expectedEthAmount;
   };
 
+  const calculateExpectedPoolTokenForETH = async (
+    amountToOffset: BigNumber,
+    carbonToken: string
+  ) => {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+
+    const expectedPoolTokensForEthRaw: BigNumber =
+      await oh.calculateExpectedPoolTokenForETH(amountToOffset, poolToken);
+
+    const expectedPoolTokensForEth = (
+      parseInt(expectedPoolTokensForEthRaw.toString()) /
+      10 ** 18
+    ).toFixed(2);
+
+    return expectedPoolTokensForEth;
+  };
+
   const calculateNeededTokenAmount = async (
     paymentMethod: string,
     carbonToken: string,
@@ -460,10 +460,11 @@ const MantineFormContainer = () => {
       amountToOffset
     );
 
-    const neededTokenAmount = (
-      parseInt(neededTokenAmountRaw.toString()) /
-      10 ** 18
-    ).toFixed(2);
+    // USDC has 6 decimals unlike other ERC20s that have 18
+    const neededTokenAmount =
+      paymentMethod === "usdc"
+        ? (parseInt(neededTokenAmountRaw.toString()) / 10 ** 6).toFixed(2)
+        : (parseInt(neededTokenAmountRaw.toString()) / 10 ** 18).toFixed(2);
 
     return neededTokenAmount;
   };
@@ -572,6 +573,7 @@ const MantineFormContainer = () => {
             label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
             min={0}
+            max={43860}
             precision={2}
             removeTrailingZeros={true}
           />
@@ -584,18 +586,21 @@ const MantineFormContainer = () => {
             (form.values.paymentMethod === "nct" &&
               form.values.offsetMethod === "nct") ? null : (
               <>
+                {/* Fix logic here */}
                 {(form.values.paymentMethod === "matic" ||
                   form.values.paymentMethod === "wmatic" ||
                   form.values.paymentMethod === "usdc" ||
                   form.values.paymentMethod === "weth") &&
                 (form.values.offsetMethod === "bct" ||
-                  form.values.offsetMethod === "nct") ? (
+                  form.values.offsetMethod === "nct") &&
+                form.values.carbonToken !== "" ? (
                   <p className="text-[14px] text-gray-400 pt-1">
-                    Estimated cost: {form.values.paymentMethod.toUpperCase()}
+                    Estimated cost: {estimate}{" "}
+                    {form.values.paymentMethod.toUpperCase()}
                   </p>
                 ) : (
                   <p className="text-[14px] text-gray-400 pt-1">
-                    Equivalent to offsetting X{" "}
+                    Equivalent to offsetting {estimate}{" "}
                     {form.values.carbonToken.toUpperCase()}
                   </p>
                 )}
