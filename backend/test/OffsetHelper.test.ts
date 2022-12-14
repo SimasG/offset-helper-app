@@ -351,7 +351,7 @@ describe("OffsetHelper", function () {
     // 1. x WETH -> y USDC -> 1 NCT -> 1 TCO2
     // 2. x WETH -> y USDC -> 1 BCT -> 1 TCO2
     TOKEN_POOLS.forEach((pool) => {
-      it(`should retire 1.0 TCO2 using a WETH swap and ${pool.name} redemption`, async function () {
+      it.only(`should retire 1.0 TCO2 using a WETH swap and ${pool.name} redemption`, async function () {
         const { offsetHelper, addr2, weth } = await loadFixture(
           deployOffsetHelperFixture
         );
@@ -366,6 +366,8 @@ describe("OffsetHelper", function () {
           pool.name === "BCT" ? addresses.bct : addresses.nct,
           ONE_ETHER
         );
+
+        console.log("weth:", weth);
 
         await (await weth.approve(offsetHelper.address, wethCost)).wait();
         await offsetHelper.autoOffsetExactOutToken(

@@ -1,4 +1,4 @@
-import { useAccount } from "wagmi";
+import { erc20ABI, useAccount } from "wagmi";
 
 import { Select, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -184,7 +184,7 @@ const MantineFormContainer = () => {
     amountToOffset: number
   ) => {
     if (paymentMethod === "bct" || paymentMethod === "nct") {
-      // ** Can't test it out atm
+      // ** Can't test it out in prod atm
       console.log("trigger autoOffsetPoolToken()");
     } else if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
@@ -196,7 +196,6 @@ const MantineFormContainer = () => {
       }
     } else {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        // * Doesn't work
         console.log("trigger autoOffsetExactOutToken()");
         autoOffsetExactOutToken(paymentMethod, offsetMethod, amountToOffset);
       } else {
@@ -267,7 +266,7 @@ const MantineFormContainer = () => {
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
-    const depositedToken =
+    const depositedToken: any =
       paymentMethod === "wmatic"
         ? addresses.wmatic
         : paymentMethod === "usdc"
@@ -277,6 +276,21 @@ const MantineFormContainer = () => {
         : null;
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+    const depositedTokenContract = new ethers.Contract(
+      depositedToken,
+      erc20ABI,
+      signer
+    );
+
+    if (depositedToken) {
+      await (
+        await depositedTokenContract.approve(
+          OHPolygonAddress,
+          ethers.utils.parseUnits(estimate, 18)
+        )
+      ).wait();
+    }
 
     const offsetTx = await oh.autoOffsetExactOutToken(
       depositedToken,
