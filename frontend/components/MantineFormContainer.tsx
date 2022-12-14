@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import handleEstimate from "../utils/getEstimates";
 
-import { ethers } from "ethers";
+import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
 import addresses, { OHPolygonAddress } from "../constants/constants";
 
@@ -29,7 +29,7 @@ const MantineFormContainer = () => {
     { label: "Specify WETH", value: "weth" },
     { label: "Specify MATIC", value: "matic" },
   ]);
-  const [estimate, setEstimate] = useState<string>("");
+  const [estimate, setEstimate] = useState<BigNumber | undefined>();
   const [loading, setLoading] = useState(false);
 
   const form = useForm({
@@ -69,7 +69,7 @@ const MantineFormContainer = () => {
           )
         );
       } else {
-        setEstimate("");
+        setEstimate(undefined);
       }
     };
     runHandleEstimate();
@@ -259,7 +259,7 @@ const MantineFormContainer = () => {
       poolToken,
       ethers.utils.parseEther(amountToOffset.toString()),
       {
-        value: ethers.utils.parseEther(estimate.toString()),
+        value: estimate,
       }
     );
     await offsetTx.wait();
@@ -309,12 +309,7 @@ const MantineFormContainer = () => {
     );
 
     await (
-      await depositedTokenContract.approve(
-        OHPolygonAddress,
-        // ** Don't understand why I have to parse the string into BigNumber
-        // ** specifically this way. I.e. why does or `BigNumber.from` not work here?
-        ethers.utils.parseEther(estimate)
-      )
+      await depositedTokenContract.approve(OHPolygonAddress, estimate)
     ).wait();
 
     const offsetTx = await oh.autoOffsetExactOutToken(
@@ -348,10 +343,7 @@ const MantineFormContainer = () => {
     );
 
     await (
-      await depositedTokenContract.approve(
-        OHPolygonAddress,
-        ethers.utils.parseEther(estimate)
-      )
+      await depositedTokenContract.approve(OHPolygonAddress, estimate)
     ).wait();
 
     const offsetTx = await oh.autoOffsetExactInToken(
@@ -365,7 +357,6 @@ const MantineFormContainer = () => {
   };
 
   const handleSubmit = async (values: typeof form.values) => {
-    // ** Do I really need this line?
     setLoading(true);
     try {
       if (isConnected) {
@@ -470,24 +461,42 @@ const MantineFormContainer = () => {
               <>
                 {form.values.carbonToken !== "" &&
                 form.values.amountToOffset !== 0 &&
-                form.values.amountToOffset !== undefined ? (
-                  (form.values.paymentMethod === "matic" ||
-                    form.values.paymentMethod === "wmatic" ||
-                    form.values.paymentMethod === "usdc" ||
-                    form.values.paymentMethod === "weth") &&
-                  (form.values.offsetMethod === "bct" ||
-                    form.values.offsetMethod === "nct") ? (
-                    <p className="text-[14px] text-gray-400 pt-1">
-                      Estimated cost: {estimate}{" "}
-                      {form.values.paymentMethod.toUpperCase()}
-                    </p>
-                  ) : (
-                    <p className="text-[14px] text-gray-400 pt-1">
-                      Equivalent to offsetting {estimate}{" "}
-                      {form.values.carbonToken.toUpperCase()}
-                    </p>
-                  )
-                ) : null}
+                form.values.amountToOffset !== undefined
+                  ? (form.values.paymentMethod === "matic" ||
+                      form.values.paymentMethod === "wmatic" ||
+                      form.values.paymentMethod === "usdc" ||
+                      form.values.paymentMethod === "weth") &&
+                    (form.values.offsetMethod === "bct" ||
+                      form.values.offsetMethod === "nct")
+                    ? estimate && (
+                        <p className="text-[14px] text-gray-400 pt-1">
+                          <>
+                            Estimated cost:{" "}
+                            {form.values.paymentMethod === "usdc"
+                              ? (
+                                  parseInt(estimate.toString()) /
+                                  10 ** 6
+                                ).toFixed(2)
+                              : (
+                                  parseInt(estimate.toString()) /
+                                  10 ** 18
+                                ).toFixed(2)}{" "}
+                            {form.values.paymentMethod.toUpperCase()}
+                          </>
+                        </p>
+                      )
+                    : estimate && (
+                        <p className="text-[14px] text-gray-400 pt-1">
+                          <>
+                            Equivalent to offsetting{" "}
+                            {(parseInt(estimate.toString()) / 10 ** 18).toFixed(
+                              2
+                            )}{" "}
+                            {form.values.carbonToken.toUpperCase()}
+                          </>
+                        </p>
+                      )
+                  : null}
               </>
             )}
           </>

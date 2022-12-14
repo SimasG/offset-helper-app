@@ -12,6 +12,7 @@ const handleEstimate = async (
     if (offsetMethod === "bct" || offsetMethod === "nct") {
       // paymentMethod: MATIC
       // offsetMethod: Specify BCT/NCT
+
       const expectedEthAmount = await calculateNeededETHAmount(
         carbonToken,
         ethers.utils.parseEther(amountToOffset.toString())
@@ -67,7 +68,6 @@ const handleEstimate = async (
       return expectedUSDCForToken;
     }
   }
-  return "";
 };
 
 export default handleEstimate;
@@ -88,12 +88,7 @@ const calculateNeededETHAmount = async (
     amountToOffset
   );
 
-  const expectedEthAmount = (
-    parseInt(expectedEthAmountRaw.toString()) /
-    10 ** 18
-  ).toFixed(2);
-
-  return expectedEthAmount;
+  return expectedEthAmountRaw;
 };
 
 const calculateExpectedPoolTokenForETH = async (
@@ -110,12 +105,7 @@ const calculateExpectedPoolTokenForETH = async (
   const expectedPoolTokensForEthRaw: BigNumber =
     await oh.calculateExpectedPoolTokenForETH(amountToOffset, poolToken);
 
-  const expectedPoolTokensForEth = (
-    parseInt(expectedPoolTokensForEthRaw.toString()) /
-    10 ** 18
-  ).toFixed(2);
-
-  return expectedPoolTokensForEth;
+  return expectedPoolTokensForEthRaw;
 };
 
 const calculateNeededTokenAmount = async (
@@ -138,12 +128,12 @@ const calculateNeededTokenAmount = async (
   );
 
   // USDC has 6 decimals unlike other ERC20s that have 18
-  const neededTokenAmount =
-    paymentMethod === "usdc"
-      ? (parseInt(neededTokenAmountRaw.toString()) / 10 ** 6).toFixed(2)
-      : (parseInt(neededTokenAmountRaw.toString()) / 10 ** 18).toFixed(2);
+  // const neededTokenAmount =
+  //   paymentMethod === "usdc"
+  //     ? (parseInt(neededTokenAmountRaw.toString()) / 10 ** 6).toFixed(2)
+  //     : (parseInt(neededTokenAmountRaw.toString()) / 10 ** 18).toFixed(2);
 
-  return neededTokenAmount;
+  return neededTokenAmountRaw;
 };
 
 const calculateExpectedPoolTokenForToken = async (
@@ -167,10 +157,5 @@ const calculateExpectedPoolTokenForToken = async (
       poolToken
     );
 
-  const expectedPoolTokenForToken = (
-    parseInt(expectedPoolTokenForTokenRaw.toString()) /
-    10 ** 18
-  ).toFixed(2);
-
-  return expectedPoolTokenForToken;
+  return expectedPoolTokenForTokenRaw;
 };
