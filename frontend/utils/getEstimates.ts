@@ -43,13 +43,9 @@ const handleEstimate = async (
       );
 
       return neededTokenAmount;
-    } else if (
-      offsetMethod === "wmatic" ||
-      offsetMethod === "usdc" ||
-      offsetMethod === "weth"
-    ) {
-      // offsetMethod: Specify WMATIC/USDC/WETH
-      // paymentMethod: WMATIC/USDC/WETH
+    } else if (offsetMethod === "wmatic" || offsetMethod === "weth") {
+      // offsetMethod: Specify WMATIC/WETH
+      // paymentMethod: WMATIC/WETH
       const expectedPoolTokenForToken =
         await calculateExpectedPoolTokenForToken(
           paymentMethod,
@@ -57,8 +53,18 @@ const handleEstimate = async (
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-      console.log("expectedPoolTokenForToken:", expectedPoolTokenForToken);
       return expectedPoolTokenForToken;
+    } else if (offsetMethod === "usdc") {
+      // offsetMethod: Specify USDC
+      // paymentMethod: USDC
+      const expectedUSDCForToken = await calculateExpectedPoolTokenForToken(
+        paymentMethod,
+        carbonToken,
+        // USDC has 6 decimals unlike other ERC20s that have 18
+        ethers.utils.parseUnits(amountToOffset.toString(), 6)
+      );
+
+      return expectedUSDCForToken;
     }
   }
   return "";
@@ -165,18 +171,6 @@ const calculateExpectedPoolTokenForToken = async (
     parseInt(expectedPoolTokenForTokenRaw.toString()) /
     10 ** 18
   ).toFixed(2);
-
-  // USDC has 6 decimals unlike other ERC20s that have 18
-  // const expectedPoolTokenForToken =
-  //   paymentMethod === "usdc"
-  //     ? (
-  //         parseInt(expectedPoolTokenForTokenRaw.toString()) /
-  //         10 ** 18
-  //       ).toFixed(2)
-  //     : (
-  //         parseInt(expectedPoolTokenForTokenRaw.toString()) /
-  //         10 ** 18
-  //       ).toFixed(2);
 
   return expectedPoolTokenForToken;
 };
