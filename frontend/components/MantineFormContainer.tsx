@@ -184,8 +184,8 @@ const MantineFormContainer = () => {
     amountToOffset: number
   ) => {
     if (paymentMethod === "bct" || paymentMethod === "nct") {
-      // ** Can't test it out in prod atm
       console.log("trigger autoOffsetPoolToken()");
+      autoOffsetPoolToken(paymentMethod, amountToOffset);
     } else if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
         console.log("trigger autoOffsetExactOutETH()");
@@ -204,6 +204,38 @@ const MantineFormContainer = () => {
         autoOffsetExactInToken(paymentMethod, offsetMethod, amountToOffset);
       }
     }
+  };
+
+  const autoOffsetPoolToken = async (
+    paymentMethod: string,
+    amountToOffset: number
+  ) => {
+    const { ethereum } = window;
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(ethereum);
+    const signer = provider.getSigner();
+
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
+
+    const poolToken = paymentMethod === "bct" ? addresses.bct : addresses.nct;
+
+    // @ts-ignore
+    const poolTokenContract = new ethers.Contract(poolToken, erc20ABI, signer);
+
+    await (
+      await poolTokenContract.approve(
+        OHPolygonAddress,
+        ethers.utils.parseEther(amountToOffset.toString())
+      )
+    ).wait();
+
+    const offsetTx = await oh.autoOffsetPoolToken(
+      poolToken,
+      ethers.utils.parseEther(amountToOffset.toString())
+    );
+
+    await offsetTx.wait();
+    console.log("offset hash", offsetTx.hash);
   };
 
   const autoOffsetExactOutETH = async (
