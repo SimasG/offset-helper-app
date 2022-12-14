@@ -1,13 +1,10 @@
 import { erc20ABI, useAccount } from "wagmi";
-
 import { Select, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
-
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import handleEstimate from "../utils/getEstimates";
-
 import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
 import addresses, { OHPolygonAddress } from "../constants/constants";
@@ -37,7 +34,8 @@ const MantineFormContainer = () => {
       paymentMethod: "",
       carbonToken: "",
       offsetMethod: "",
-      amountToOffset: 0,
+      // ** How do I specify `amountToOffset`'s types? I want to it be both `number` & `string`
+      amountToOffset: undefined,
     },
 
     validateInputOnChange: true,
@@ -46,9 +44,16 @@ const MantineFormContainer = () => {
       paymentMethod: (value) => (value === "" ? `Required` : null),
       carbonToken: (value) => (value === "" ? `Required` : null),
       offsetMethod: (value) => (value === "" ? `Required` : null),
-      amountToOffset: (value) => (value <= 0 || !value ? `Required` : null),
+      amountToOffset: (value) =>
+        typeof value === "number"
+          ? value <= 0
+            ? `Value must be above 0`
+            : null
+          : `Required`,
     },
   });
+
+  console.log("form.values.amountToOffset:", form.values.amountToOffset);
 
   const { isConnected } = useAccount();
 
@@ -64,6 +69,7 @@ const MantineFormContainer = () => {
           await handleEstimate(
             form.values.paymentMethod,
             form.values.carbonToken,
+            // @ts-ignore
             form.values.amountToOffset,
             form.values.offsetMethod
           )
@@ -363,6 +369,7 @@ const MantineFormContainer = () => {
           await handleOffset(
             values.paymentMethod,
             values.offsetMethod,
+            // @ts-ignore
             values.amountToOffset
           );
           setLoading(false);
@@ -447,6 +454,8 @@ const MantineFormContainer = () => {
             min={0}
             max={43860}
             precision={2}
+            placeholder={0}
+            // defaultValue={""}
             removeTrailingZeros={true}
           />
         </div>
@@ -459,7 +468,9 @@ const MantineFormContainer = () => {
               form.values.offsetMethod === "nct") ? null : (
               <>
                 {form.values.carbonToken !== "" &&
-                form.values.amountToOffset !== 0 &&
+                // @ts-ignore
+                (form.values.amountToOffset !== 0 ||
+                  form.values.amountToOffset !== "") &&
                 form.values.amountToOffset !== undefined
                   ? (form.values.paymentMethod === "matic" ||
                       form.values.paymentMethod === "wmatic" ||
