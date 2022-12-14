@@ -1,4 +1,4 @@
-import { erc20ABI, useAccount, useConnect } from "wagmi";
+import { erc20ABI, useAccount } from "wagmi";
 
 import { Select, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -178,7 +178,7 @@ const MantineFormContainer = () => {
   // If paymentMethod = MATIC & offsetMethod = MATIC -> autoOffsetExactInETH()
   // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = BCT/NCT -> autoOffsetExactOutToken()
   // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = WMATIC/USDC/WETH -> autoOffsetExactInToken()
-  const offset = async (
+  const handleOffset = async (
     paymentMethod: string,
     offsetMethod: string,
     amountToOffset: number
@@ -208,14 +208,13 @@ const MantineFormContainer = () => {
     }
   };
 
-  // `offset` helpers
+  // `handleOffset` helpers
   const autoOffsetPoolToken = async (
     paymentMethod: string,
     amountToOffset: number
   ) => {
-    const { ethereum } = window;
     // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
@@ -245,10 +244,8 @@ const MantineFormContainer = () => {
     offsetMethod: string,
     amountToOffset: number
   ) => {
-    const { ethereum } = window;
     // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(ethereum);
-
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
@@ -270,15 +267,15 @@ const MantineFormContainer = () => {
     offsetMethod: string,
     amountToOffset: number
   ) => {
-    const { ethereum } = window;
     // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
 
+    // ** Not sure why I don't need to approve the MATIC tx here
     const offsetTx = await oh.autoOffsetExactInETH(poolToken, {
       value: ethers.utils.parseEther(amountToOffset.toString()),
     });
@@ -292,18 +289,19 @@ const MantineFormContainer = () => {
     offsetMethod: string,
     amountToOffset: number
   ) => {
-    const { ethereum } = window;
     // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
 
+    const depositedToken = addresses[paymentMethod];
+
     const depositedTokenContract = new ethers.Contract(
       // @ts-ignore
-      addresses[paymentMethod],
+      depositedToken,
       erc20ABI,
       signer
     );
@@ -313,7 +311,7 @@ const MantineFormContainer = () => {
     ).wait();
 
     const offsetTx = await oh.autoOffsetExactOutToken(
-      addresses[paymentMethod],
+      depositedToken,
       poolToken,
       ethers.utils.parseEther(amountToOffset.toString())
     );
@@ -326,18 +324,19 @@ const MantineFormContainer = () => {
     offsetMethod: string,
     amountToOffset: number
   ) => {
-    const { ethereum } = window;
     // @ts-ignore
-    const provider = new ethers.providers.Web3Provider(ethereum);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
 
+    const depositedToken = addresses[paymentMethod];
+
     const depositedTokenContract = new ethers.Contract(
       // @ts-ignore
-      addresses[paymentMethod],
+      depositedToken,
       erc20ABI,
       signer
     );
@@ -347,7 +346,7 @@ const MantineFormContainer = () => {
     ).wait();
 
     const offsetTx = await oh.autoOffsetExactInToken(
-      addresses[paymentMethod],
+      depositedToken,
       ethers.utils.parseEther(amountToOffset.toString()),
       poolToken
     );
@@ -361,7 +360,7 @@ const MantineFormContainer = () => {
     try {
       if (isConnected) {
         {
-          await offset(
+          await handleOffset(
             values.paymentMethod,
             values.offsetMethod,
             values.amountToOffset

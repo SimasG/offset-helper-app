@@ -10,9 +10,7 @@ const handleEstimate = async (
 ) => {
   if (paymentMethod === "matic") {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
-      // paymentMethod: MATIC
-      // offsetMethod: Specify BCT/NCT
-
+      // paymentMethod: MATIC || offsetMethod: Specify BCT/NCT
       const expectedEthAmount = await calculateNeededETHAmount(
         carbonToken,
         ethers.utils.parseEther(amountToOffset.toString())
@@ -20,8 +18,7 @@ const handleEstimate = async (
 
       return expectedEthAmount;
     } else if (offsetMethod === "matic") {
-      // paymentMethod: MATIC
-      // offsetMethod: Specify MATIC
+      // paymentMethod: MATIC || offsetMethod: Specify MATIC
       const expectedPoolTokensForEth = await calculateExpectedPoolTokenForETH(
         ethers.utils.parseEther(amountToOffset.toString()),
         carbonToken
@@ -35,8 +32,7 @@ const handleEstimate = async (
     paymentMethod === "weth"
   ) {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
-      // paymentMethod: WMATIC/USDC/WETH
-      // offsetMethod: Specify BCT/NCT
+      // paymentMethod: WMATIC/USDC/WETH || offsetMethod: Specify BCT/NCT
       const neededTokenAmount = await calculateNeededTokenAmount(
         paymentMethod,
         carbonToken,
@@ -45,8 +41,7 @@ const handleEstimate = async (
 
       return neededTokenAmount;
     } else if (offsetMethod === "wmatic" || offsetMethod === "weth") {
-      // offsetMethod: Specify WMATIC/WETH
-      // paymentMethod: WMATIC/WETH
+      // paymentMethod: WMATIC/WETH || offsetMethod: Specify WMATIC/WETH
       const expectedPoolTokenForToken =
         await calculateExpectedPoolTokenForToken(
           paymentMethod,
@@ -56,8 +51,7 @@ const handleEstimate = async (
 
       return expectedPoolTokenForToken;
     } else if (offsetMethod === "usdc") {
-      // offsetMethod: Specify USDC
-      // paymentMethod: USDC
+      // paymentMethod: USDC || offsetMethod: Specify USDC
       const expectedUSDCForToken = await calculateExpectedPoolTokenForToken(
         paymentMethod,
         carbonToken,
@@ -72,6 +66,7 @@ const handleEstimate = async (
 
 export default handleEstimate;
 
+// `handleEstimate helpers`
 const calculateNeededETHAmount = async (
   carbonToken: string,
   amountToOffset: BigNumber
@@ -83,12 +78,12 @@ const calculateNeededETHAmount = async (
 
   const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
-  const expectedEthAmountRaw: BigNumber = await oh.calculateNeededETHAmount(
+  const neededETHAmount: BigNumber = await oh.calculateNeededETHAmount(
     poolToken,
     amountToOffset
   );
 
-  return expectedEthAmountRaw;
+  return neededETHAmount;
 };
 
 const calculateExpectedPoolTokenForETH = async (
@@ -102,10 +97,10 @@ const calculateExpectedPoolTokenForETH = async (
 
   const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
-  const expectedPoolTokensForEthRaw: BigNumber =
+  const expectedPoolTokenForETH: BigNumber =
     await oh.calculateExpectedPoolTokenForETH(amountToOffset, poolToken);
 
-  return expectedPoolTokensForEthRaw;
+  return expectedPoolTokenForETH;
 };
 
 const calculateNeededTokenAmount = async (
@@ -119,21 +114,16 @@ const calculateNeededTokenAmount = async (
   const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
 
   const fromToken = addresses[paymentMethod];
+
   const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
-  const neededTokenAmountRaw: BigNumber = await oh.calculateNeededTokenAmount(
+  const neededTokenAmount: BigNumber = await oh.calculateNeededTokenAmount(
     fromToken,
     poolToken,
     amountToOffset
   );
 
-  // USDC has 6 decimals unlike other ERC20s that have 18
-  // const neededTokenAmount =
-  //   paymentMethod === "usdc"
-  //     ? (parseInt(neededTokenAmountRaw.toString()) / 10 ** 6).toFixed(2)
-  //     : (parseInt(neededTokenAmountRaw.toString()) / 10 ** 18).toFixed(2);
-
-  return neededTokenAmountRaw;
+  return neededTokenAmount;
 };
 
 const calculateExpectedPoolTokenForToken = async (
@@ -150,12 +140,12 @@ const calculateExpectedPoolTokenForToken = async (
 
   const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
-  const expectedPoolTokenForTokenRaw: BigNumber =
+  const expectedPoolTokenForToken: BigNumber =
     await oh.calculateExpectedPoolTokenForToken(
       fromToken,
       amountToOffset,
       poolToken
     );
 
-  return expectedPoolTokenForTokenRaw;
+  return expectedPoolTokenForToken;
 };
