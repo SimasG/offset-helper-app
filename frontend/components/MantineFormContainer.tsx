@@ -252,8 +252,6 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
-  // ** `UNPREDICTABLE_GAS_LIMIT` if amountToOffset is > 0
-  // `UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT` if amountToOffset is 0. Oke, I just can't have an input of 0, makes sense.
   const autoOffsetExactOutToken = async (
     paymentMethod: string,
     offsetMethod: string,
@@ -266,44 +264,33 @@ const MantineFormContainer = () => {
 
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
-    const depositedToken: any =
-      paymentMethod === "wmatic"
-        ? addresses.wmatic
-        : paymentMethod === "usdc"
-        ? addresses.usdc
-        : paymentMethod === "weth"
-        ? addresses.weth
-        : null;
-
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
 
     const depositedTokenContract = new ethers.Contract(
-      depositedToken,
+      // @ts-ignore
+      addresses[paymentMethod],
       erc20ABI,
       signer
     );
 
-    if (depositedToken) {
-      await (
-        await depositedTokenContract.approve(
-          OHPolygonAddress,
-          ethers.utils.parseUnits(estimate, 18)
-        )
-      ).wait();
-    }
+    await (
+      await depositedTokenContract.approve(
+        OHPolygonAddress,
+        // ** Don't understand why I have to parse the string into BigNumber
+        // ** specifically this way. I.e. why does or `BigNumber.from` not work here?
+        ethers.utils.parseEther(estimate)
+      )
+    ).wait();
 
     const offsetTx = await oh.autoOffsetExactOutToken(
-      depositedToken,
+      addresses[paymentMethod],
       poolToken,
       ethers.utils.parseEther(amountToOffset.toString())
-
-      // FixedNumber.from(amountToOffset.toString())
     );
     await offsetTx.wait();
     console.log("offset hash", offsetTx.hash);
   };
 
-  // ** `UNPREDICTABLE_GAS_LIMIT` if amountToOffset is >= 0
   const autoOffsetExactInToken = async (
     paymentMethod: string,
     offsetMethod: string,
@@ -317,6 +304,20 @@ const MantineFormContainer = () => {
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+    const depositedTokenContract = new ethers.Contract(
+      // @ts-ignore
+      addresses[paymentMethod],
+      erc20ABI,
+      signer
+    );
+
+    await (
+      await depositedTokenContract.approve(
+        OHPolygonAddress,
+        ethers.utils.parseEther(estimate)
+      )
+    ).wait();
 
     const offsetTx = await oh.autoOffsetExactInToken(
       addresses[paymentMethod],
