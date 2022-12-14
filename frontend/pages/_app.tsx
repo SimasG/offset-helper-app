@@ -12,8 +12,11 @@ import { alchemyProvider } from "wagmi/providers/alchemy";
 
 // Connecting chains we support with providers we have
 const { chains, provider } = configureChains(
-  [chain.polygon, chain.polygonMumbai],
-  [publicProvider()]
+  [chain.polygon],
+  [
+    // alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY }),
+    publicProvider(),
+  ]
 );
 
 // `connectors` are the wallets we'll support

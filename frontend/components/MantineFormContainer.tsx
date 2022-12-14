@@ -1,4 +1,4 @@
-import { erc20ABI, useAccount } from "wagmi";
+import { erc20ABI, useAccount, useConnect } from "wagmi";
 
 import { Select, NumberInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -30,15 +30,7 @@ const MantineFormContainer = () => {
     { label: "Specify MATIC", value: "matic" },
   ]);
   const [estimate, setEstimate] = useState<string>("");
-
-  const paymentMethods: { label: string; value: string }[] = [
-    { label: "BCT", value: "bct" },
-    { label: "NCT", value: "nct" },
-    { label: "WMATIC", value: "wmatic" },
-    { label: "USDC", value: "usdc" },
-    { label: "WETH", value: "weth" },
-    { label: "MATIC", value: "matic" },
-  ];
+  const [loading, setLoading] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -82,6 +74,15 @@ const MantineFormContainer = () => {
     };
     runHandleEstimate();
   }, [form.values]);
+
+  const paymentMethods: { label: string; value: string }[] = [
+    { label: "BCT", value: "bct" },
+    { label: "NCT", value: "nct" },
+    { label: "WMATIC", value: "wmatic" },
+    { label: "USDC", value: "usdc" },
+    { label: "WETH", value: "weth" },
+    { label: "MATIC", value: "matic" },
+  ];
 
   // * Functions
   // 1. Changing carbon token to offset option array according to which payment method was selected
@@ -176,36 +177,38 @@ const MantineFormContainer = () => {
   // If paymentMethod = MATIC & offsetMethod = BCT/NCT -> autoOffsetExactOutETH()
   // If paymentMethod = MATIC & offsetMethod = MATIC -> autoOffsetExactInETH()
   // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = BCT/NCT -> autoOffsetExactOutToken()
-
   // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = WMATIC/USDC/WETH -> autoOffsetExactInToken()
-  const offset = (
+  const offset = async (
     paymentMethod: string,
     offsetMethod: string,
     amountToOffset: number
   ) => {
     if (paymentMethod === "bct" || paymentMethod === "nct") {
-      console.log("trigger autoOffsetPoolToken()");
-      autoOffsetPoolToken(paymentMethod, amountToOffset);
+      await autoOffsetPoolToken(paymentMethod, amountToOffset);
     } else if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        console.log("trigger autoOffsetExactOutETH()");
-        autoOffsetExactOutETH(offsetMethod, amountToOffset);
+        await autoOffsetExactOutETH(offsetMethod, amountToOffset);
       } else {
-        console.log("trigger autoOffsetExactInETH()");
-        autoOffsetExactInETH(offsetMethod, amountToOffset);
+        await autoOffsetExactInETH(offsetMethod, amountToOffset);
       }
     } else {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
-        console.log("trigger autoOffsetExactOutToken()");
-        autoOffsetExactOutToken(paymentMethod, offsetMethod, amountToOffset);
+        await autoOffsetExactOutToken(
+          paymentMethod,
+          offsetMethod,
+          amountToOffset
+        );
       } else {
-        console.log("trigger autoOffsetExactInToken()");
-        // * Doesn't work
-        autoOffsetExactInToken(paymentMethod, offsetMethod, amountToOffset);
+        await autoOffsetExactInToken(
+          paymentMethod,
+          offsetMethod,
+          amountToOffset
+        );
       }
     }
   };
 
+  // `offset` helpers
   const autoOffsetPoolToken = async (
     paymentMethod: string,
     amountToOffset: number
@@ -362,21 +365,28 @@ const MantineFormContainer = () => {
   };
 
   const handleSubmit = async (values: typeof form.values) => {
-    if (isConnected) {
-      {
-        offset(
-          values.paymentMethod,
-          values.offsetMethod,
-          values.amountToOffset
-        );
-        toast.success(
-          `${
-            form.values.amountToOffset
-          } ${form.values.paymentMethod.toUpperCase()} has been offset!`
-        );
+    // ** Do I really need this line?
+    setLoading(true);
+    try {
+      if (isConnected) {
+        {
+          await offset(
+            values.paymentMethod,
+            values.offsetMethod,
+            values.amountToOffset
+          );
+          setLoading(false);
+          toast.success(
+            `${
+              form.values.amountToOffset
+            } ${form.values.paymentMethod.toUpperCase()} has been offset!`
+          );
+        }
+      } else {
+        toast.error("Connect to a Wallet first!");
       }
-    } else {
-      toast.error("Connect to a Wallet first!");
+    } catch {
+      setLoading(false);
     }
   };
 
@@ -486,7 +496,8 @@ const MantineFormContainer = () => {
         {/* Offset Button */}
         <div className="mt-8 font-bold text-center">
           <button
-            className="px-4 py-2 text-white bg-green-500 rounded-sm hover:bg-green-300 drop-shadow-lg"
+            disabled={loading}
+            className="px-4 py-2 text-white bg-green-500 rounded-sm hover:bg-green-300 drop-shadow-lg disabled:opacity-50 disabled:bg-green-300"
             type="submit"
           >
             OFFSET
