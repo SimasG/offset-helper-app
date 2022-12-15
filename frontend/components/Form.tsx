@@ -9,7 +9,7 @@ import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
 import addresses, { OHPolygonAddress } from "../constants/constants";
 
-const MantineFormContainer = () => {
+const Form = () => {
   const [carbonTokens, setCarbonTokens] = useState<
     { label: string; value: string }[]
   >([
@@ -53,8 +53,6 @@ const MantineFormContainer = () => {
     },
   });
 
-  console.log("form.values.amountToOffset:", form.values.amountToOffset);
-
   const { isConnected } = useAccount();
 
   useEffect(() => {
@@ -90,12 +88,10 @@ const MantineFormContainer = () => {
     { label: "MATIC", value: "matic" },
   ];
 
-  // * Functions
-  // 1. Changing carbon token to offset option array according to which payment method was selected
-  // E.g. if BCT payment method was selected, pre-select BCT as the carbon token to offset
-
-  // 2. Changing offset method option array according to which payment method was selected
-  // E.g. if BCT payment method was selected, pre-select "Specify BCT" as the offset method
+  /**
+   * @description sets form values & updates `carbonTokens` and `offsetMethods` arrays according to selected payment method
+   * @param paymentMethod payment method selected by user
+   */
   const handlePaymentMethod = (paymentMethod: string) => {
     if (paymentMethod === "bct" || paymentMethod === "nct") {
       form.setValues({
@@ -132,7 +128,11 @@ const MantineFormContainer = () => {
     }
   };
 
-  // Changing offset method option array according to which carbon token & payment method was chosen
+  /**
+   * @description sets form values & updates `offsetMethods` array according to selected carbon token and payment method
+   * @param paymentMethod payment method selected by user
+   * @param carbonToken carbon token selected by user
+   */
   const handleCarbonToken = (paymentMethod: string, carbonToken: string) => {
     form.setValues({
       carbonToken: carbonToken,
@@ -160,6 +160,10 @@ const MantineFormContainer = () => {
     }
   };
 
+  /**
+   * @description sets form values & updates `carbonTokens` array according to selected offset method
+   * @param offsetMethod offset method selected by user
+   */
   const handleOffsetMethod = (offsetMethod: string) => {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
       form.setValues({
@@ -178,12 +182,17 @@ const MantineFormContainer = () => {
     }
   };
 
-  // * Blockchain-related functionality
-  // If paymentMethod = BCT/NCT -> autoOffsetPoolToken()
-  // If paymentMethod = MATIC & offsetMethod = BCT/NCT -> autoOffsetExactOutETH()
-  // If paymentMethod = MATIC & offsetMethod = MATIC -> autoOffsetExactInETH()
-  // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = BCT/NCT -> autoOffsetExactOutToken()
-  // If paymentMethod = WMATIC/USDC/WETH & offsetMethod = WMATIC/USDC/WETH -> autoOffsetExactInToken()
+  /**
+   * @description runs the applicable offset function
+   * If paymentMethod = BCT/NCT -> autoOffsetPoolToken()
+   * If paymentMethod = MATIC & offsetMethod = BCT/NCT -> autoOffsetExactOutETH()
+   * If paymentMethod = MATIC & offsetMethod = MATIC -> autoOffsetExactInETH()
+   * If paymentMethod = WMATIC/USDC/WETH & offsetMethod = BCT/NCT -> autoOffsetExactOutToken()
+   * If paymentMethod = WMATIC/USDC/WETH & offsetMethod = WMATIC/USDC/WETH -> autoOffsetExactInToken()
+   * @param paymentMethod payment method selected by user
+   * @param offsetMethod offset method selected by user
+   * @param amountToOffset amount to offset selected by user
+   */
   const handleOffset = async (
     paymentMethod: string,
     offsetMethod: string,
@@ -214,7 +223,11 @@ const MantineFormContainer = () => {
     }
   };
 
-  // `handleOffset` helpers
+  /**
+   * @description `handleOffset` helper: offsets pool token directly (no swaps are necessary)
+   * @param paymentMethod payment method selected by user
+   * @param amountToOffset amount to offset selected by user
+   */
   const autoOffsetPoolToken = async (
     paymentMethod: string,
     amountToOffset: number
@@ -246,6 +259,11 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
+  /**
+   * @description `handleOffset` helper: offsets specified amount of pool token using MATIC
+   * @param offsetMethod offset method selected by user
+   * @param amountToOffset amount to offset selected by user
+   */
   const autoOffsetExactOutETH = async (
     offsetMethod: string,
     amountToOffset: number
@@ -269,6 +287,11 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
+  /**
+   * @description `handleOffset` helper: offsets pool token using specified amount of MATIC
+   * @param offsetMethod offset method selected by user
+   * @param amountToOffset amount to offset selected by user
+   */
   const autoOffsetExactInETH = async (
     offsetMethod: string,
     amountToOffset: number
@@ -290,6 +313,12 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
+  /**
+   * @description `handleOffset` helper: offsets specified amount of pool token using WMATIC/USDC/WETH
+   * @param paymentMethod payment method selected by user
+   * @param offsetMethod offset method selected by user
+   * @param amountToOffset amount to offset selected by user
+   */
   const autoOffsetExactOutToken = async (
     paymentMethod: string,
     offsetMethod: string,
@@ -325,6 +354,12 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
+  /**
+   * @description `handleOffset` helper: offsets pool token using specified amount of WMATIC/USDC/WETH
+   * @param paymentMethod payment method selected by user
+   * @param offsetMethod offset method selected by user
+   * @param amountToOffset amount to offset selected by user
+   */
   const autoOffsetExactInToken = async (
     paymentMethod: string,
     offsetMethod: string,
@@ -361,6 +396,10 @@ const MantineFormContainer = () => {
     console.log("offset hash", offsetTx.hash);
   };
 
+  /**
+   * @description handles form submission (i.e. submission to offset)
+   * @param values form values object
+   */
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);
     try {
@@ -387,6 +426,10 @@ const MantineFormContainer = () => {
     }
   };
 
+  /**
+   * @description handles form validation error display
+   * @param errors form errors object
+   */
   const handleError = (errors: typeof form.errors) => {
     if (errors.paymentMethod) {
       showNotification({ message: "Required input", color: "red" });
@@ -455,7 +498,6 @@ const MantineFormContainer = () => {
             max={43860}
             precision={2}
             placeholder={0}
-            // defaultValue={""}
             removeTrailingZeros={true}
           />
         </div>
@@ -527,4 +569,4 @@ const MantineFormContainer = () => {
   );
 };
 
-export default MantineFormContainer;
+export default Form;

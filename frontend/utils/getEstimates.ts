@@ -2,6 +2,14 @@ import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
 import addresses, { OHPolygonAddress } from "../constants/constants";
 
+/**
+ * @description runs the applicable estimate function
+ * @param paymentMethod payment method selected by user
+ * @param carbonToken carbon token selected by user
+ * @param amountToOffset amount to offset selected by user
+ * @param offsetMethod offset method selected by user
+ * @returns pool token offset or payment method estimate (BigNumber)
+ */
 const handleEstimate = async (
   paymentMethod: string,
   carbonToken: string,
@@ -67,6 +75,12 @@ const handleEstimate = async (
 export default handleEstimate;
 
 // `handleEstimate helpers`
+/**
+ * @description `handleEstimate` helper: estimates amount of MATIC required to offset specified amount of pool token
+ * @param carbonToken carbon token selected by user
+ * @param amountToOffset amount to offset selected by user
+ * @returns estimated amount of MATIC required (BigNumber)
+ */
 const calculateNeededETHAmount = async (
   carbonToken: string,
   amountToOffset: BigNumber
@@ -86,6 +100,12 @@ const calculateNeededETHAmount = async (
   return neededETHAmount;
 };
 
+/**
+ * @description `handleEstimate` helper: estimates amount of pool token to be offset given a specified amount of MATIC
+ * @param amountToOffset amount to offset selected by user
+ * @param carbonToken carbon token selected by user
+ * @returns estimated amount of pool token to be offset (BigNumber)
+ */
 const calculateExpectedPoolTokenForETH = async (
   amountToOffset: BigNumber,
   carbonToken: string
@@ -103,6 +123,13 @@ const calculateExpectedPoolTokenForETH = async (
   return expectedPoolTokenForETH;
 };
 
+/**
+ * @description `handleEstimate` helper: estimates amount of WMATIC/USDC/WETH required to offset specified amount of pool token
+ * @param paymentMethod payment method selected by user
+ * @param carbonToken carbon token selected by user
+ * @param amountToOffset amount to offset selected by user
+ * @returns estimated amount of WMATIC/USDC/WETH required (BigNumber)
+ */
 const calculateNeededTokenAmount = async (
   paymentMethod: string,
   carbonToken: string,
@@ -126,6 +153,13 @@ const calculateNeededTokenAmount = async (
   return neededTokenAmount;
 };
 
+/**
+ * @description `handleEstimate` helper: estimates amount of pool token to be offset given a specified amount of WMATIC/USDC/WETH
+ * @param paymentMethod payment method selected by user
+ * @param carbonToken carbon token selected by user
+ * @param amountToOffset amount to offset selected by user
+ * @returns
+ */
 const calculateExpectedPoolTokenForToken = async (
   paymentMethod: string,
   carbonToken: string,
