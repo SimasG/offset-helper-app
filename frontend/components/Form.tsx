@@ -495,7 +495,8 @@ const Form = () => {
             label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
             min={0}
-            max={43860}
+            // ** If max is 43860, why can I input more than that?
+            max={40000}
             precision={2}
             placeholder={0}
             removeTrailingZeros={true}

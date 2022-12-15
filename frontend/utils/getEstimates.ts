@@ -85,19 +85,26 @@ const calculateNeededETHAmount = async (
   carbonToken: string,
   amountToOffset: BigNumber
 ) => {
-  // @ts-ignore
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  try {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-  const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
 
-  const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
-  const neededETHAmount: BigNumber = await oh.calculateNeededETHAmount(
-    poolToken,
-    amountToOffset
-  );
+    const neededETHAmount: BigNumber = await oh.calculateNeededETHAmount(
+      poolToken,
+      amountToOffset
+    );
 
-  return neededETHAmount;
+    console.log("neededETHAmount:", neededETHAmount);
+
+    return neededETHAmount;
+  } catch (e) {
+    // Most common error: liquidity exceeded
+    console.error("error:", e);
+  }
 };
 
 /**
@@ -135,22 +142,29 @@ const calculateNeededTokenAmount = async (
   carbonToken: string,
   amountToOffset: BigNumber
 ) => {
-  // @ts-ignore
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  try {
+    // @ts-ignore
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
 
-  const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
+    const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, provider);
 
-  const fromToken = addresses[paymentMethod];
+    const fromToken = addresses[paymentMethod];
 
-  const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
+    const poolToken = carbonToken === "bct" ? addresses.bct : addresses.nct;
 
-  const neededTokenAmount: BigNumber = await oh.calculateNeededTokenAmount(
-    fromToken,
-    poolToken,
-    amountToOffset
-  );
+    const neededTokenAmount: BigNumber = await oh.calculateNeededTokenAmount(
+      fromToken,
+      poolToken,
+      amountToOffset
+    );
 
-  return neededTokenAmount;
+    console.log("neededTokenAmount:", neededTokenAmount);
+
+    return neededTokenAmount;
+  } catch (e) {
+    // Most common error: liquidity exceeded
+    console.error("error:", e);
+  }
 };
 
 /**

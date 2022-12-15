@@ -17,3 +17,7 @@ body {
 .mantine-NumberInput-label {
   font-size: 16px;
 }
+
+.mantine-NumberInput-rightSection {
+  display: none;
+}
