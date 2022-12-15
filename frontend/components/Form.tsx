@@ -34,7 +34,7 @@ const Form = () => {
       paymentMethod: "",
       carbonToken: "",
       offsetMethod: "",
-      // ** How do I specify `amountToOffset`'s types? I want to it be both `number` & `string`
+      // ** Types: How do I specify `amountToOffset`'s types? I want to it be both `number` & `string`
       amountToOffset: undefined,
     },
 
@@ -240,7 +240,6 @@ const Form = () => {
 
     const poolToken = paymentMethod === "bct" ? addresses.bct : addresses.nct;
 
-    // @ts-ignore
     const poolTokenContract = new ethers.Contract(poolToken, erc20ABI, signer);
 
     await (
@@ -335,7 +334,6 @@ const Form = () => {
     const depositedToken = addresses[paymentMethod];
 
     const depositedTokenContract = new ethers.Contract(
-      // @ts-ignore
       depositedToken,
       erc20ABI,
       signer
@@ -376,7 +374,6 @@ const Form = () => {
     const depositedToken = addresses[paymentMethod];
 
     const depositedTokenContract = new ethers.Contract(
-      // @ts-ignore
       depositedToken,
       erc20ABI,
       signer
@@ -510,7 +507,6 @@ const Form = () => {
               form.values.offsetMethod === "nct") ? null : (
               <>
                 {form.values.carbonToken !== "" &&
-                // @ts-ignore
                 (form.values.amountToOffset !== 0 ||
                   form.values.amountToOffset !== "") &&
                 form.values.amountToOffset !== undefined

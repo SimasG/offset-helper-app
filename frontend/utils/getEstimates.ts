@@ -103,8 +103,6 @@ const calculateNeededETHAmount = async (
       amountToOffset
     );
 
-    console.log("neededETHAmount:", neededETHAmount);
-
     return neededETHAmount;
   } catch (e) {
     // Most common error: liquidity exceeded
@@ -162,8 +160,6 @@ const calculateNeededTokenAmount = async (
       poolToken,
       amountToOffset
     );
-
-    console.log("neededTokenAmount:", neededTokenAmount);
 
     return neededTokenAmount;
   } catch (e) {

@@ -14,21 +14,21 @@ import { alchemyProvider } from "wagmi/providers/alchemy";
 const { chains, provider } = configureChains(
   [chain.polygon],
   [
-    // alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY }),
+    // ** Add alchemyProvider once I launch the dapp
+    // alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
     publicProvider(),
   ]
 );
 
-// `connectors` are the wallets we'll support
-// Creating a list of connectors we'll support on RainbowKit
-// & sharing the list with the wagmiClient
+// Creating an array of connectors (wallets) we'll support
+// on RainbowKit & sharing the array with the wagmiClient
 const { connectors } = getDefaultWallets({
   appName: "Offset Helper App",
   chains,
 });
 
-// Initializing a wagmi client that combines all the above information, that RainbowKit
-// will use under the hood
+// Initializing a wagmi client that combines all the above
+// information that RainbowKit will use under the hood
 const wagmiClient = createClient({
   autoConnect: true,
   connectors,
