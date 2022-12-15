@@ -16,59 +16,64 @@ const handleEstimate = async (
   amountToOffset: number,
   offsetMethod: string
 ) => {
-  if (paymentMethod === "matic") {
-    if (offsetMethod === "bct" || offsetMethod === "nct") {
-      // paymentMethod: MATIC || offsetMethod: Specify BCT/NCT
-      const expectedEthAmount = await calculateNeededETHAmount(
-        carbonToken,
-        ethers.utils.parseEther(amountToOffset.toString())
-      );
+  try {
+    if (paymentMethod === "matic") {
+      if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // paymentMethod: MATIC || offsetMethod: Specify BCT/NCT
+        const expectedEthAmount = await calculateNeededETHAmount(
+          carbonToken,
+          ethers.utils.parseEther(amountToOffset.toString())
+        );
 
-      return expectedEthAmount;
-    } else if (offsetMethod === "matic") {
-      // paymentMethod: MATIC || offsetMethod: Specify MATIC
-      const expectedPoolTokensForEth = await calculateExpectedPoolTokenForETH(
-        ethers.utils.parseEther(amountToOffset.toString()),
-        carbonToken
-      );
+        return expectedEthAmount;
+      } else if (offsetMethod === "matic") {
+        // paymentMethod: MATIC || offsetMethod: Specify MATIC
+        const expectedPoolTokensForEth = await calculateExpectedPoolTokenForETH(
+          ethers.utils.parseEther(amountToOffset.toString()),
+          carbonToken
+        );
 
-      return expectedPoolTokensForEth;
-    }
-  } else if (
-    paymentMethod === "wmatic" ||
-    paymentMethod === "usdc" ||
-    paymentMethod === "weth"
-  ) {
-    if (offsetMethod === "bct" || offsetMethod === "nct") {
-      // paymentMethod: WMATIC/USDC/WETH || offsetMethod: Specify BCT/NCT
-      const neededTokenAmount = await calculateNeededTokenAmount(
-        paymentMethod,
-        carbonToken,
-        ethers.utils.parseEther(amountToOffset.toString())
-      );
-
-      return neededTokenAmount;
-    } else if (offsetMethod === "wmatic" || offsetMethod === "weth") {
-      // paymentMethod: WMATIC/WETH || offsetMethod: Specify WMATIC/WETH
-      const expectedPoolTokenForToken =
-        await calculateExpectedPoolTokenForToken(
+        return expectedPoolTokensForEth;
+      }
+    } else if (
+      paymentMethod === "wmatic" ||
+      paymentMethod === "usdc" ||
+      paymentMethod === "weth"
+    ) {
+      if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // paymentMethod: WMATIC/USDC/WETH || offsetMethod: Specify BCT/NCT
+        const neededTokenAmount = await calculateNeededTokenAmount(
           paymentMethod,
           carbonToken,
           ethers.utils.parseEther(amountToOffset.toString())
         );
 
-      return expectedPoolTokenForToken;
-    } else if (offsetMethod === "usdc") {
-      // paymentMethod: USDC || offsetMethod: Specify USDC
-      const expectedUSDCForToken = await calculateExpectedPoolTokenForToken(
-        paymentMethod,
-        carbonToken,
-        // USDC has 6 decimals unlike other ERC20s that have 18
-        ethers.utils.parseUnits(amountToOffset.toString(), 6)
-      );
+        return neededTokenAmount;
+      } else if (offsetMethod === "wmatic" || offsetMethod === "weth") {
+        // paymentMethod: WMATIC/WETH || offsetMethod: Specify WMATIC/WETH
+        const expectedPoolTokenForToken =
+          await calculateExpectedPoolTokenForToken(
+            paymentMethod,
+            carbonToken,
+            ethers.utils.parseEther(amountToOffset.toString())
+          );
 
-      return expectedUSDCForToken;
+        return expectedPoolTokenForToken;
+      } else if (offsetMethod === "usdc") {
+        // paymentMethod: USDC || offsetMethod: Specify USDC
+        const expectedUSDCForToken = await calculateExpectedPoolTokenForToken(
+          paymentMethod,
+          carbonToken,
+          // USDC has 6 decimals unlike other ERC20s that have 18
+          ethers.utils.parseUnits(amountToOffset.toString(), 6)
+        );
+
+        return expectedUSDCForToken;
+      }
     }
+  } catch (e) {
+    // Most common error: INVALID_ARGUMENT once `amountToOffset` is > 1e+21
+    console.error("error:", e);
   }
 };
 

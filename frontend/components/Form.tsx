@@ -495,8 +495,7 @@ const Form = () => {
             label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
             {...form.getInputProps("amountToOffset")}
             min={0}
-            // ** If max is 43860, why can I input more than that?
-            max={40000}
+            max={100000}
             precision={2}
             placeholder={0}
             removeTrailingZeros={true}
@@ -553,6 +552,11 @@ const Form = () => {
               </>
             )}
           </>
+        )}
+        {form.values.amountToOffset && form.values.amountToOffset >= 100000 && (
+          <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
+            Careful: large inputs significantly deteriorate exchange rate
+          </p>
         )}
 
         {/* Offset Button */}
