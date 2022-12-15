@@ -1,6 +1,6 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
-import { Lato } from "@next/font/google";
+import { Ubuntu } from "@next/font/google";
 import { Toaster } from "react-hot-toast";
 
 // Additional `rainbowkit` & `wagmi` setup
@@ -35,10 +35,10 @@ const wagmiClient = createClient({
   provider,
 });
 
-const lato = Lato({
+const ubuntu = Ubuntu({
   subsets: ["latin"],
   weight: ["400", "700"],
-  variable: "--font-lato",
+  variable: "--font-ubuntu",
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -48,13 +48,13 @@ function MyApp({ Component, pageProps }: AppProps) {
         toastOptions={{
           className: "",
           style: {
-            fontFamily: "lato",
+            fontFamily: "Ubuntu",
             fontWeight: "medium",
           },
         }}
       />
       <RainbowKitProvider chains={chains}>
-        <main className={lato.className}>
+        <main className={ubuntu.className}>
           <Component {...pageProps} />
         </main>
       </RainbowKitProvider>

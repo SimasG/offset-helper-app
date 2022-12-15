@@ -549,9 +549,9 @@ const Form = () => {
             )}
           </>
         )}
-        {form.values.amountToOffset && form.values.amountToOffset >= 100000 && (
+        {form.values.amountToOffset && form.values.amountToOffset >= 50000 && (
           <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
-            Careful: large inputs significantly deteriorate exchange rate
+            Note: large inputs significantly deteriorate exchange rate
           </p>
         )}
 
