@@ -8,6 +8,7 @@ import handleEstimate from "../utils/getEstimates";
 import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
 import addresses, { OHPolygonAddress } from "../constants/constants";
+import SelectItem from "./SelectItem";
 
 // Constants
 const USDCDenominator = 10 ** 6;
@@ -15,10 +16,10 @@ const ETHDenominator = 10 ** 18;
 
 const Form = () => {
   const [carbonTokens, setCarbonTokens] = useState<
-    { label: string; value: string }[]
+    { label: string; value: string; image: string }[]
   >([
-    { label: "BCT", value: "bct" },
-    { label: "NCT", value: "nct" },
+    { label: "BCT", value: "bct", image: "/bct.png" },
+    { label: "NCT", value: "nct", image: "/nct.png" },
   ]);
   const [offsetMethods, setOffsetMethods] = useState<
     { label: string; value: string }[]
@@ -83,13 +84,13 @@ const Form = () => {
     runHandleEstimate();
   }, [form.values]);
 
-  const paymentMethods: { label: string; value: string }[] = [
-    { label: "BCT", value: "bct" },
-    { label: "NCT", value: "nct" },
-    { label: "WMATIC", value: "wmatic" },
-    { label: "USDC", value: "usdc" },
-    { label: "WETH", value: "weth" },
-    { label: "MATIC", value: "matic" },
+  const paymentMethods: { label: string; value: string; image: string }[] = [
+    { label: "BCT", value: "bct", image: "/bct.png" },
+    { label: "NCT", value: "nct", image: "/nct.png" },
+    { label: "WMATIC", value: "wmatic", image: "/matic.png" },
+    { label: "USDC", value: "usdc", image: "/usdc.png" },
+    { label: "WETH", value: "weth", image: "/eth.png" },
+    { label: "MATIC", value: "matic", image: "/matic.png" },
   ];
 
   // Ternary conditions
@@ -123,6 +124,7 @@ const Form = () => {
         {
           label: paymentMethod.toUpperCase(),
           value: paymentMethod,
+          image: `/${paymentMethod}.png`,
         },
       ]);
       setOffsetMethods([
@@ -137,8 +139,8 @@ const Form = () => {
         offsetMethod: paymentMethod,
       });
       setCarbonTokens([
-        { label: "BCT", value: "bct" },
-        { label: "NCT", value: "nct" },
+        { label: "BCT", value: "bct", image: "/bct.png" },
+        { label: "NCT", value: "nct", image: "/nct.png" },
       ]);
       setOffsetMethods([
         { label: "Specify BCT", value: "bct" },
@@ -199,8 +201,8 @@ const Form = () => {
       });
 
       setCarbonTokens([
-        { label: "BCT", value: "bct" },
-        { label: "NCT", value: "nct" },
+        { label: "BCT", value: "bct", image: "/bct.png" },
+        { label: "NCT", value: "nct", image: "/nct.png" },
       ]);
     }
   };
@@ -479,6 +481,7 @@ const Form = () => {
             placeholder="Select an option"
             {...form.getInputProps("paymentMethod")}
             data={paymentMethods}
+            itemComponent={SelectItem}
             value={form.values.paymentMethod}
             onChange={(e: string) => {
               handlePaymentMethod(e);
@@ -492,6 +495,7 @@ const Form = () => {
             placeholder="Select an option"
             {...form.getInputProps("carbonToken")}
             data={carbonTokens}
+            itemComponent={SelectItem}
             value={form.values.carbonToken}
             onChange={(e: string) => {
               handleCarbonToken(form.values.paymentMethod, e);
@@ -561,7 +565,8 @@ const Form = () => {
             )}
           </>
         )}
-        {!paymentMethodPoolToken &&
+        {formCompleted &&
+          !paymentMethodPoolToken &&
           form.values.amountToOffset &&
           form.values.amountToOffset >= 50000 && (
             <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
