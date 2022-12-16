@@ -465,7 +465,7 @@ const Form = () => {
     <>
       <form
         onSubmit={form.onSubmit(handleSubmit, handleError)}
-        className="px-14 py-7 sm:px-20 sm:py-10 bg-white rounded-lg shadow-lg drop-shadow-md shadow-[#d4eed4]"
+        className="px-8 py-4 sm:px-20 sm:py-10 bg-white rounded-lg shadow-lg drop-shadow-md shadow-[#d4eed4]"
       >
         {/* Input Container */}
         <div className="flex flex-col gap-4">
