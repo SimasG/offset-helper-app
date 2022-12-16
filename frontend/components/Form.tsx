@@ -88,6 +88,22 @@ const Form = () => {
     { label: "MATIC", value: "matic" },
   ];
 
+  // Ternary conditions
+  const paymentMethodNotPoolTokenOffsetMethodPoolToken =
+    (form.values.paymentMethod === "matic" ||
+      form.values.paymentMethod === "wmatic" ||
+      form.values.paymentMethod === "usdc" ||
+      form.values.paymentMethod === "weth") &&
+    (form.values.offsetMethod === "bct" || form.values.offsetMethod === "nct");
+
+  const formCompleted =
+    form.values.carbonToken !== "" &&
+    (form.values.amountToOffset !== 0 || form.values.amountToOffset !== "") &&
+    form.values.amountToOffset !== undefined;
+
+  const paymentMethodPoolToken =
+    form.values.paymentMethod === "bct" || form.values.paymentMethod === "nct";
+
   /**
    * @description sets form values & updates `carbonTokens` and `offsetMethods` arrays according to selected payment method
    * @param paymentMethod payment method selected by user
@@ -100,7 +116,10 @@ const Form = () => {
         offsetMethod: paymentMethod,
       });
       setCarbonTokens([
-        { label: paymentMethod.toUpperCase(), value: paymentMethod },
+        {
+          label: paymentMethod.toUpperCase(),
+          value: paymentMethod,
+        },
       ]);
       setOffsetMethods([
         {
@@ -501,21 +520,10 @@ const Form = () => {
 
         {form.values.offsetMethod && form.values.paymentMethod && (
           <>
-            {(form.values.paymentMethod === "bct" &&
-              form.values.offsetMethod === "bct") ||
-            (form.values.paymentMethod === "nct" &&
-              form.values.offsetMethod === "nct") ? null : (
+            {paymentMethodPoolToken ? null : (
               <>
-                {form.values.carbonToken !== "" &&
-                (form.values.amountToOffset !== 0 ||
-                  form.values.amountToOffset !== "") &&
-                form.values.amountToOffset !== undefined
-                  ? (form.values.paymentMethod === "matic" ||
-                      form.values.paymentMethod === "wmatic" ||
-                      form.values.paymentMethod === "usdc" ||
-                      form.values.paymentMethod === "weth") &&
-                    (form.values.offsetMethod === "bct" ||
-                      form.values.offsetMethod === "nct")
+                {formCompleted
+                  ? paymentMethodNotPoolTokenOffsetMethodPoolToken
                     ? estimate && (
                         <p className="text-[14px] text-gray-400 pt-1">
                           <>

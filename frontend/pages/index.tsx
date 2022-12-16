@@ -5,7 +5,7 @@ import Form from "../components/Form";
 
 const Home: NextPage = () => {
   return (
-    <div>
+    <div className="h-[1000px]">
       <Head>
         <title>Offset Helper</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
