@@ -12,7 +12,7 @@ const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
   ({ label, value, image, ...others }: SelectItemProps, ref) => {
     return (
       <div ref={ref} {...others}>
-        <Image src={image} alt="token image" width={25} height={25} />
+        <Image src={image} alt="token image" width={26} height={26} />
         <p>{label}</p>
       </div>
     );

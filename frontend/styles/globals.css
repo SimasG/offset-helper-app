@@ -47,6 +47,7 @@ body {
 
 .mantine-Select-item {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
   font-family: "Fira Sans", serif;

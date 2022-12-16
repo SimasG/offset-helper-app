@@ -164,7 +164,7 @@ const Form = () => {
       offsetMethod: carbonToken,
     });
 
-    if (!paymentMethod) {
+    if (!paymentMethod || paymentMethod === "bct" || paymentMethod === "nct") {
       setOffsetMethods([
         {
           label: `Specify ${carbonToken.toUpperCase()}`,
