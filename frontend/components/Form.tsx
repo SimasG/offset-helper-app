@@ -7,23 +7,21 @@ import toast from "react-hot-toast";
 import handleEstimate from "../utils/getEstimates";
 import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
-import addresses, { OHPolygonAddress } from "../constants/constants";
+import addresses, {
+  ETHDenominator,
+  OHPolygonAddress,
+  USDCDenominator,
+} from "../constants/constants";
 import SelectItem from "./SelectItem";
-
-// Constants
-const USDCDenominator = 10 ** 6;
-const ETHDenominator = 10 ** 18;
+import { paymentMethods } from "../utils/paymentMethods";
+import { carbonTokensProps, offsetMethodsProps } from "../utils/types";
 
 const Form = () => {
-  const [carbonTokens, setCarbonTokens] = useState<
-    { label: string; value: string; image: string }[]
-  >([
+  const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps>([
     { label: "BCT", value: "bct", image: "/bct.png" },
     { label: "NCT", value: "nct", image: "/nct.png" },
   ]);
-  const [offsetMethods, setOffsetMethods] = useState<
-    { label: string; value: string }[]
-  >([
+  const [offsetMethods, setOffsetMethods] = useState<offsetMethodsProps>([
     { label: "Specify BCT", value: "bct" },
     { label: "Specify NCT", value: "nct" },
     { label: "Specify WMATIC", value: "wmatic" },
@@ -83,15 +81,6 @@ const Form = () => {
     };
     runHandleEstimate();
   }, [form.values]);
-
-  const paymentMethods: { label: string; value: string; image: string }[] = [
-    { label: "BCT", value: "bct", image: "/bct.png" },
-    { label: "NCT", value: "nct", image: "/nct.png" },
-    { label: "WMATIC", value: "wmatic", image: "/matic.png" },
-    { label: "USDC", value: "usdc", image: "/usdc.png" },
-    { label: "WETH", value: "weth", image: "/eth.png" },
-    { label: "MATIC", value: "matic", image: "/matic.png" },
-  ];
 
   // Ternary conditions
   const paymentMethodNotPoolTokenOffsetMethodPoolToken =
@@ -229,6 +218,7 @@ const Form = () => {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
         await autoOffsetExactOutETH(offsetMethod, amountToOffset);
       } else {
+        // ** Doesn't work
         await autoOffsetExactInETH(offsetMethod, amountToOffset);
       }
     } else {
@@ -267,6 +257,17 @@ const Form = () => {
 
     const poolTokenContract = new ethers.Contract(poolToken, erc20ABI, signer);
 
+    const userAddress = await signer.getAddress();
+
+    const userPoolTokenBalance = await poolTokenContract.balanceOf(userAddress);
+
+    const amountToOffsetBN = ethers.utils.parseEther(amountToOffset.toString());
+
+    if (userPoolTokenBalance < amountToOffsetBN) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
     await (
       await poolTokenContract.approve(
         OHPolygonAddress,
@@ -278,9 +279,10 @@ const Form = () => {
       poolToken,
       ethers.utils.parseEther(amountToOffset.toString())
     );
-
     await offsetTx.wait();
     console.log("offset hash", offsetTx.hash);
+
+    return offsetTx.hash;
   };
 
   /**
@@ -300,6 +302,20 @@ const Form = () => {
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
 
+    const userBalance = await signer.getBalance();
+
+    if (estimate) {
+      // ** Why do I have to convert them to numbers to compare correctly?
+      if (
+        parseInt(ethers.utils.formatEther(userBalance)) <
+        parseInt(ethers.utils.formatEther(estimate))
+      ) {
+        toast.error("Insufficient balance");
+        return;
+      }
+    }
+
+    // ** Not sure why I don't need to approve the MATIC tx here
     const offsetTx = await oh.autoOffsetExactOutETH(
       poolToken,
       ethers.utils.parseEther(amountToOffset.toString()),
@@ -309,6 +325,8 @@ const Form = () => {
     );
     await offsetTx.wait();
     console.log("offset hash", offsetTx.hash);
+
+    return offsetTx.hash;
   };
 
   /**
@@ -327,6 +345,19 @@ const Form = () => {
     const oh = new ethers.Contract(OHPolygonAddress, OffsetHelperABI, signer);
 
     const poolToken = offsetMethod === "bct" ? addresses.bct : addresses.nct;
+
+    const userBalance = await signer.getBalance();
+
+    const amountToOffsetBN = ethers.utils.parseEther(amountToOffset.toString());
+
+    // ** Why do I have to convert them to numbers to compare correctly?
+    if (
+      parseInt(ethers.utils.formatEther(userBalance)) <
+      parseInt(ethers.utils.formatEther(amountToOffsetBN))
+    ) {
+      toast.error("Insufficient balance");
+      return;
+    }
 
     // ** Not sure why I don't need to approve the MATIC tx here
     const offsetTx = await oh.autoOffsetExactInETH(poolToken, {
@@ -363,6 +394,19 @@ const Form = () => {
       erc20ABI,
       signer
     );
+
+    const userAddress = await signer.getAddress();
+
+    const userTokenBalance = await depositedTokenContract.balanceOf(
+      userAddress
+    );
+
+    if (estimate) {
+      if (userTokenBalance < estimate) {
+        toast.error("Insufficient balance");
+        return;
+      }
+    }
 
     await (
       await depositedTokenContract.approve(OHPolygonAddress, estimate)
@@ -404,13 +448,26 @@ const Form = () => {
       signer
     );
 
+    const userAddress = await signer.getAddress();
+
+    const userTokenBalance = await depositedTokenContract.balanceOf(
+      userAddress
+    );
+
+    const amountToOffsetBN = ethers.utils.parseEther(amountToOffset.toString());
+
+    if (userTokenBalance < amountToOffsetBN) {
+      toast.error("Insufficient balance");
+      return;
+    }
+
     await (
       await depositedTokenContract.approve(OHPolygonAddress, estimate)
     ).wait();
 
     const offsetTx = await oh.autoOffsetExactInToken(
       depositedToken,
-      ethers.utils.parseEther(amountToOffset.toString()),
+      amountToOffsetBN,
       poolToken
     );
 
@@ -427,13 +484,15 @@ const Form = () => {
     try {
       if (isConnected) {
         {
-          await handleOffset(
+          const offsetTx = await handleOffset(
             values.paymentMethod,
             values.offsetMethod,
             // @ts-ignore
             values.amountToOffset
           );
           setLoading(false);
+          console.log("offsetTx:", offsetTx);
+          if (offsetTx === undefined) return;
           toast.success(
             `${
               form.values.amountToOffset
@@ -520,7 +579,7 @@ const Form = () => {
             {...form.getInputProps("amountToOffset")}
             min={0}
             max={100000}
-            precision={2}
+            precision={3}
             placeholder={0}
             removeTrailingZeros={true}
           />

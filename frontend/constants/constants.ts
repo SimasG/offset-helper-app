@@ -1,5 +1,7 @@
 export const OHMumbaiAddress = "0xDC54484c13d9956199cc14A49d07D58be4794D2A";
 export const OHPolygonAddress = "0x9e0ACA6ABd7498d6EFcDcb5E3e736DbB6487458c";
+export const USDCDenominator = 10 ** 6;
+export const ETHDenominator = 10 ** 18;
 
 const addresses: Record<string, string> = {
   myAddress: "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",

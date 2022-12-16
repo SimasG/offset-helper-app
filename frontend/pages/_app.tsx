@@ -15,8 +15,8 @@ const { chains, provider } = configureChains(
   [chain.polygon],
   [
     // ** Add alchemyProvider once I launch the dapp
-    // alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
     publicProvider(),
+    // alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
   ]
 );
 
@@ -46,9 +46,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     <WagmiConfig client={wagmiClient}>
       <Toaster
         toastOptions={{
-          className: "",
           style: {
-            fontFamily: "Ubuntu",
+            fontFamily: "Ubuntu, sans-serif",
             fontWeight: "medium",
           },
         }}
