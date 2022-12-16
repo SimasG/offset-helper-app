@@ -5,13 +5,13 @@ import Form from "../components/Form";
 
 const Home: NextPage = () => {
   return (
-    <div className="h-[800px]">
+    <div>
       <Head>
         <title>Offset Helper</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
       </Head>
       <Header />
-      <div className="flex flex-col items-center justify-start w-full h-full gap-10 sm:gap-20">
+      <div className="flex flex-col items-center justify-start w-full h-full gap-10 pb-4 sm:pb-8 md:pb-10 sm:gap-20">
         <div className="flex flex-col items-center justify-center gap-5 p-5">
           <h1 className="text-5xl font-bold text-center drop-shadow-lg">
             Offset Your <span className="text-red-500">Emissions</span> Easily
