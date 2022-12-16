@@ -47,6 +47,7 @@ body {
 
 .mantine-Select-item {
   font-size: 1rem;
+  font-family: "Fira Sans", serif;
 }
 
 .mantine-Select-label,

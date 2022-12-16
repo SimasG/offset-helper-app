@@ -9,6 +9,10 @@ import { BigNumber, ethers } from "ethers";
 import { OffsetHelperABI } from "../constants";
 import addresses, { OHPolygonAddress } from "../constants/constants";
 
+// Constants
+const USDCDenominator = 10 ** 6;
+const ETHDenominator = 10 ** 18;
+
 const Form = () => {
   const [carbonTokens, setCarbonTokens] = useState<
     { label: string; value: string }[]
@@ -465,7 +469,7 @@ const Form = () => {
     <>
       <form
         onSubmit={form.onSubmit(handleSubmit, handleError)}
-        className="px-8 py-4 sm:px-20 sm:py-10 bg-white rounded-lg shadow-lg drop-shadow-md shadow-[#d4eed4]"
+        className="px-8 py-4 sm:px-20 sm:py-10 bg-white rounded-lg shadow-sm drop-shadow-md shadow-[#d4eed4]"
       >
         {/* Input Container */}
         <div className="flex flex-col gap-4">
@@ -518,6 +522,7 @@ const Form = () => {
           />
         </div>
 
+        {/* Estimates */}
         {form.values.offsetMethod && form.values.paymentMethod && (
           <>
             {paymentMethodPoolToken ? null : (
@@ -531,11 +536,10 @@ const Form = () => {
                             {form.values.paymentMethod === "usdc"
                               ? (
                                   parseInt(estimate.toString()) /
-                                  10 ** 6
+                                  USDCDenominator
                                 ).toFixed(2)
                               : (
-                                  parseInt(estimate.toString()) /
-                                  10 ** 18
+                                  parseInt(estimate.toString()) / ETHDenominator
                                 ).toFixed(2)}{" "}
                             {form.values.paymentMethod.toUpperCase()}
                           </>
@@ -545,9 +549,9 @@ const Form = () => {
                         <p className="text-[14px] text-gray-400 pt-1">
                           <>
                             Equivalent to offsetting{" "}
-                            {(parseInt(estimate.toString()) / 10 ** 18).toFixed(
-                              2
-                            )}{" "}
+                            {(
+                              parseInt(estimate.toString()) / ETHDenominator
+                            ).toFixed(2)}{" "}
                             {form.values.carbonToken.toUpperCase()}
                           </>
                         </p>
@@ -557,11 +561,13 @@ const Form = () => {
             )}
           </>
         )}
-        {form.values.amountToOffset && form.values.amountToOffset >= 50000 && (
-          <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
-            Note: large inputs significantly deteriorate exchange rate
-          </p>
-        )}
+        {!paymentMethodPoolToken &&
+          form.values.amountToOffset &&
+          form.values.amountToOffset >= 50000 && (
+            <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
+              Note: large inputs significantly deteriorate exchange rate
+            </p>
+          )}
 
         {/* Offset Button */}
         <div className="mt-8 font-bold text-center">
