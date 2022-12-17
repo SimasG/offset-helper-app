@@ -269,6 +269,13 @@ describe("OffsetHelper", function () {
           ONE_ETHER
         );
 
+        console.log(
+          "poolToken:",
+          poolToken.name === "BCT" ? addresses.bct : addresses.nct
+        );
+        console.log("amountToOffset:", ONE_ETHER);
+        console.log("value:", maticCost);
+
         // then we use the autoOffset function to retire 1.0 TCO2 from MATIC using NCT
         const tx = await (
           await offsetHelper.autoOffsetExactOutETH(

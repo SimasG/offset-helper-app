@@ -8,7 +8,6 @@ type SelectItemProps = {
 };
 
 const SelectItem = forwardRef<HTMLDivElement, SelectItemProps>(
-  // ** How does `...others` work here?
   ({ label, value, image, ...others }: SelectItemProps, ref) => {
     return (
       <div ref={ref} {...others}>
