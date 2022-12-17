@@ -216,6 +216,7 @@ const Form = () => {
       await autoOffsetPoolToken(paymentMethod, amountToOffset);
     } else if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
+        // ** Doesn't work
         await autoOffsetExactOutETH(offsetMethod, amountToOffset);
       } else {
         // ** Doesn't work
@@ -259,12 +260,17 @@ const Form = () => {
 
     const userAddress = await signer.getAddress();
 
-    const userPoolTokenBalance = await poolTokenContract.balanceOf(userAddress);
+    const userPoolTokenBalance: BigNumber = await poolTokenContract.balanceOf(
+      userAddress
+    );
 
     const amountToOffsetBN = ethers.utils.parseEther(amountToOffset.toString());
 
-    if (userPoolTokenBalance < amountToOffsetBN) {
-      toast.error("Insufficient balance");
+    if (
+      parseFloat(ethers.utils.formatEther(userPoolTokenBalance)) <
+      parseFloat(ethers.utils.formatEther(amountToOffsetBN))
+    ) {
+      toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
       return;
     }
 
@@ -305,12 +311,11 @@ const Form = () => {
     const userBalance = await signer.getBalance();
 
     if (estimate) {
-      // ** Why do I have to convert them to numbers to compare correctly?
       if (
-        parseInt(ethers.utils.formatEther(userBalance)) <
-        parseInt(ethers.utils.formatEther(estimate))
+        parseFloat(ethers.utils.formatEther(userBalance)) <
+        parseFloat(ethers.utils.formatEther(estimate))
       ) {
-        toast.error("Insufficient balance");
+        toast.error(`Insufficient MATIC balance`);
         return;
       }
     }
@@ -350,12 +355,11 @@ const Form = () => {
 
     const amountToOffsetBN = ethers.utils.parseEther(amountToOffset.toString());
 
-    // ** Why do I have to convert them to numbers to compare correctly?
     if (
-      parseInt(ethers.utils.formatEther(userBalance)) <
-      parseInt(ethers.utils.formatEther(amountToOffsetBN))
+      parseFloat(ethers.utils.formatEther(userBalance)) <
+      parseFloat(ethers.utils.formatEther(amountToOffsetBN))
     ) {
-      toast.error("Insufficient balance");
+      toast.error("Insufficient MATIC balance");
       return;
     }
 
@@ -402,9 +406,22 @@ const Form = () => {
     );
 
     if (estimate) {
-      if (userTokenBalance < estimate) {
-        toast.error("Insufficient balance");
-        return;
+      if (paymentMethod === "usdc") {
+        if (
+          parseFloat(ethers.utils.formatUnits(userTokenBalance, 6)) <
+          parseFloat(ethers.utils.formatUnits(estimate, 6))
+        ) {
+          toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
+          return;
+        }
+      } else {
+        if (
+          parseFloat(ethers.utils.formatEther(userTokenBalance)) <
+          parseFloat(ethers.utils.formatEther(estimate))
+        ) {
+          toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
+          return;
+        }
       }
     }
 
@@ -450,14 +467,22 @@ const Form = () => {
 
     const userAddress = await signer.getAddress();
 
-    const userTokenBalance = await depositedTokenContract.balanceOf(
-      userAddress
-    );
+    // ** WMATIC still confuses the hell out of me
+    const userTokenBalance =
+      paymentMethod === "wmatic"
+        ? await signer.getBalance()
+        : await depositedTokenContract.balanceOf(userAddress);
 
-    const amountToOffsetBN = ethers.utils.parseEther(amountToOffset.toString());
+    const amountToOffsetBN =
+      paymentMethod === "usdc"
+        ? ethers.utils.parseUnits(amountToOffset.toString(), 6)
+        : ethers.utils.parseEther(amountToOffset.toString());
 
-    if (userTokenBalance < amountToOffsetBN) {
-      toast.error("Insufficient balance");
+    if (
+      parseFloat(ethers.utils.formatEther(userTokenBalance)) <
+      parseFloat(ethers.utils.formatEther(amountToOffsetBN))
+    ) {
+      toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
       return;
     }
 
