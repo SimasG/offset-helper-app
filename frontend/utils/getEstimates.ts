@@ -10,12 +10,17 @@ import addresses, { OHPolygonAddress } from "../constants/constants";
  * @param offsetMethod offset method selected by user
  * @returns pool token offset or payment method estimate (BigNumber)
  */
-const handleEstimate = async (
-  paymentMethod: string,
-  carbonToken: string,
-  amountToOffset: number,
-  offsetMethod: string
-) => {
+const handleEstimate = async ({
+  paymentMethod,
+  carbonToken,
+  amountToOffset,
+  offsetMethod,
+}: {
+  paymentMethod: string;
+  carbonToken: string;
+  amountToOffset: number;
+  offsetMethod: string;
+}) => {
   try {
     if (paymentMethod === "matic") {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
@@ -42,31 +47,31 @@ const handleEstimate = async (
     ) {
       if (offsetMethod === "bct" || offsetMethod === "nct") {
         // paymentMethod: WMATIC/USDC/WETH || offsetMethod: Specify BCT/NCT
-        const neededTokenAmount = await calculateNeededTokenAmount(
-          paymentMethod,
-          carbonToken,
-          ethers.utils.parseEther(amountToOffset.toString())
-        );
+        const neededTokenAmount = await calculateNeededTokenAmount({
+          paymentMethod: paymentMethod,
+          carbonToken: carbonToken,
+          amountToOffset: ethers.utils.parseEther(amountToOffset.toString()),
+        });
 
         return neededTokenAmount;
       } else if (offsetMethod === "wmatic" || offsetMethod === "weth") {
         // paymentMethod: WMATIC/WETH || offsetMethod: Specify WMATIC/WETH
         const expectedPoolTokenForToken =
-          await calculateExpectedPoolTokenForToken(
-            paymentMethod,
-            carbonToken,
-            ethers.utils.parseEther(amountToOffset.toString())
-          );
+          await calculateExpectedPoolTokenForToken({
+            paymentMethod: paymentMethod,
+            carbonToken: carbonToken,
+            amountToOffset: ethers.utils.parseEther(amountToOffset.toString()),
+          });
 
         return expectedPoolTokenForToken;
       } else if (offsetMethod === "usdc") {
         // paymentMethod: USDC || offsetMethod: Specify USDC
-        const expectedUSDCForToken = await calculateExpectedPoolTokenForToken(
-          paymentMethod,
-          carbonToken,
+        const expectedUSDCForToken = await calculateExpectedPoolTokenForToken({
+          paymentMethod: paymentMethod,
+          carbonToken: carbonToken,
           // USDC has 6 decimals unlike other ERC20s that have 18
-          ethers.utils.parseUnits(amountToOffset.toString(), 6)
-        );
+          amountToOffset: ethers.utils.parseUnits(amountToOffset.toString(), 6),
+        });
 
         return expectedUSDCForToken;
       }
@@ -140,11 +145,15 @@ const calculateExpectedPoolTokenForETH = async (
  * @param amountToOffset amount to offset selected by user
  * @returns estimated amount of WMATIC/USDC/WETH required (BigNumber)
  */
-const calculateNeededTokenAmount = async (
-  paymentMethod: string,
-  carbonToken: string,
-  amountToOffset: BigNumber
-) => {
+const calculateNeededTokenAmount = async ({
+  paymentMethod,
+  carbonToken,
+  amountToOffset,
+}: {
+  paymentMethod: string;
+  carbonToken: string;
+  amountToOffset: BigNumber;
+}) => {
   try {
     // @ts-ignore
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -175,11 +184,15 @@ const calculateNeededTokenAmount = async (
  * @param amountToOffset amount to offset selected by user
  * @returns
  */
-const calculateExpectedPoolTokenForToken = async (
-  paymentMethod: string,
-  carbonToken: string,
-  amountToOffset: BigNumber
-) => {
+const calculateExpectedPoolTokenForToken = async ({
+  paymentMethod,
+  carbonToken,
+  amountToOffset,
+}: {
+  paymentMethod: string;
+  carbonToken: string;
+  amountToOffset: BigNumber;
+}) => {
   // @ts-ignore
   const provider = new ethers.providers.Web3Provider(window.ethereum);
 

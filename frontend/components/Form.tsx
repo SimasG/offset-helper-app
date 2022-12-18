@@ -63,12 +63,12 @@ const Form = () => {
         form.values.offsetMethod
       ) {
         setEstimate(
-          await handleEstimate(
-            form.values.paymentMethod,
-            form.values.carbonToken,
-            form.values.amountToOffset,
-            form.values.offsetMethod
-          )
+          await handleEstimate({
+            paymentMethod: form.values.paymentMethod,
+            carbonToken: form.values.carbonToken,
+            amountToOffset: form.values.amountToOffset,
+            offsetMethod: form.values.offsetMethod,
+          })
         );
       } else {
         setEstimate(undefined);

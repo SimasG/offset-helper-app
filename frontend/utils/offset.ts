@@ -33,26 +33,30 @@ const handleOffset = async ({
   } else if (paymentMethod === "matic") {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
       // ** Doesn't work
-      await autoOffsetExactOutETH(offsetMethod, amountToOffset, estimate);
+      await autoOffsetExactOutETH({
+        offsetMethod: offsetMethod,
+        amountToOffset: amountToOffset,
+        estimate: estimate,
+      });
     } else {
       // ** Doesn't work
       await autoOffsetExactInETH(offsetMethod, amountToOffset);
     }
   } else {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
-      await autoOffsetExactOutToken(
-        paymentMethod,
-        offsetMethod,
-        amountToOffset,
-        estimate
-      );
+      await autoOffsetExactOutToken({
+        paymentMethod: paymentMethod,
+        offsetMethod: offsetMethod,
+        amountToOffset: amountToOffset,
+        estimate: estimate,
+      });
     } else {
-      await autoOffsetExactInToken(
-        paymentMethod,
-        offsetMethod,
-        amountToOffset,
-        estimate
-      );
+      await autoOffsetExactInToken({
+        paymentMethod: paymentMethod,
+        offsetMethod: offsetMethod,
+        amountToOffset: amountToOffset,
+        estimate: estimate,
+      });
     }
   }
 };
@@ -117,11 +121,15 @@ const autoOffsetPoolToken = async (
  * @param offsetMethod offset method selected by user
  * @param amountToOffset amount to offset selected by user
  */
-const autoOffsetExactOutETH = async (
-  offsetMethod: string,
-  amountToOffset: number,
-  estimate: BigNumber | undefined
-) => {
+const autoOffsetExactOutETH = async ({
+  offsetMethod,
+  amountToOffset,
+  estimate,
+}: {
+  offsetMethod: string;
+  amountToOffset: number;
+  estimate: BigNumber | undefined;
+}) => {
   // @ts-ignore
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
@@ -207,12 +215,17 @@ const autoOffsetExactInETH = async (
  * @param offsetMethod offset method selected by user
  * @param amountToOffset amount to offset selected by user
  */
-const autoOffsetExactOutToken = async (
-  paymentMethod: string,
-  offsetMethod: string,
-  amountToOffset: number,
-  estimate: BigNumber | undefined
-) => {
+const autoOffsetExactOutToken = async ({
+  paymentMethod,
+  offsetMethod,
+  amountToOffset,
+  estimate,
+}: {
+  paymentMethod: string;
+  offsetMethod: string;
+  amountToOffset: number;
+  estimate: BigNumber | undefined;
+}) => {
   // @ts-ignore
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
@@ -272,12 +285,17 @@ const autoOffsetExactOutToken = async (
  * @param offsetMethod offset method selected by user
  * @param amountToOffset amount to offset selected by user
  */
-const autoOffsetExactInToken = async (
-  paymentMethod: string,
-  offsetMethod: string,
-  amountToOffset: number,
-  estimate: BigNumber | undefined
-) => {
+const autoOffsetExactInToken = async ({
+  paymentMethod,
+  offsetMethod,
+  amountToOffset,
+  estimate,
+}: {
+  paymentMethod: string;
+  offsetMethod: string;
+  amountToOffset: number;
+  estimate: BigNumber | undefined;
+}) => {
   // @ts-ignore
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
