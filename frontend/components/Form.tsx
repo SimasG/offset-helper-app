@@ -93,6 +93,12 @@ const Form = () => {
   const paymentMethodPoolToken =
     form.values.paymentMethod === "bct" || form.values.paymentMethod === "nct";
 
+  const validForm =
+    !!form.values.offsetMethod &&
+    !!form.values.paymentMethod &&
+    formCompleted &&
+    !!estimate;
+
   /**
    * @description sets form values & updates `carbonTokens` and `offsetMethods` arrays according to selected payment method
    * @param paymentMethod payment method selected by user
@@ -242,13 +248,6 @@ const Form = () => {
     }
   };
 
-  const validForm =
-    !!form.values.offsetMethod &&
-    !!form.values.paymentMethod &&
-    !paymentMethodPoolToken &&
-    formCompleted &&
-    !!estimate;
-
   return (
     <>
       <form
@@ -310,10 +309,10 @@ const Form = () => {
         </div>
 
         {/* Estimates */}
-        {validForm && (
+        {validForm && !paymentMethodPoolToken && (
           <>
             {paymentMethodNotPoolTokenOffsetMethodPoolToken ? (
-              <p className="text-[14px] text-gray-400 pt-1">
+              <p className="text-[12px] text-gray-400 pt-1">
                 <>
                   Estimated cost:{" "}
                   {form.values.paymentMethod === "usdc"
@@ -327,7 +326,7 @@ const Form = () => {
                 </>
               </p>
             ) : (
-              <p className="text-[14px] text-gray-400 pt-1">
+              <p className="text-[12px] text-gray-400 pt-1">
                 <>
                   Equivalent to offsetting{" "}
                   {(parseInt(estimate.toString()) / ETHDenominator).toFixed(2)}{" "}
@@ -338,12 +337,27 @@ const Form = () => {
           </>
         )}
 
-        {/* Add logic for ETH? */}
         {/* Large input warning */}
-        {validForm && form.values.amountToOffset! >= 40000 && (
-          <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
-            Note: large inputs significantly deteriorate exchange rate
-          </p>
+        {validForm && !paymentMethodPoolToken && (
+          <>
+            {form.values.paymentMethod === "weth" ? (
+              <>
+                {form.values.amountToOffset! >= 40 && (
+                  <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
+                    Note: large inputs significantly deteriorate exchange rate
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                {form.values.amountToOffset! >= 40000 && (
+                  <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
+                    Note: large inputs significantly deteriorate exchange rate
+                  </p>
+                )}
+              </>
+            )}
+          </>
         )}
 
         {/* Offset Button */}
