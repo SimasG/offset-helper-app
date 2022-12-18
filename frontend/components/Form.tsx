@@ -10,11 +10,11 @@ import { ETHDenominator, USDCDenominator } from "../constants/constants";
 import SelectItem from "./SelectItem";
 import { paymentMethods } from "../utils/paymentMethods";
 import { carbonTokensProps, offsetMethodsProps } from "../utils/types";
-import Test from "./Test";
 import handleOffset from "../utils/offset";
+import Icon from "./Icon";
 
 const Form = () => {
-  const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps>([
+  const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
     { label: "BCT", value: "bct", image: "/bct.png" },
     { label: "NCT", value: "nct", image: "/nct.png" },
   ]);
@@ -248,6 +248,8 @@ const Form = () => {
     }
   };
 
+  console.log("form.values:", form.values);
+
   return (
     <>
       <form
@@ -263,6 +265,11 @@ const Form = () => {
             {...form.getInputProps("paymentMethod")}
             data={paymentMethods}
             itemComponent={SelectItem}
+            icon={
+              form.values.paymentMethod ? (
+                <Icon token={form.values.paymentMethod} />
+              ) : undefined
+            }
             value={form.values.paymentMethod}
             onChange={(e: string) => {
               handlePaymentMethod(e);
@@ -277,7 +284,11 @@ const Form = () => {
             {...form.getInputProps("carbonToken")}
             data={carbonTokens}
             itemComponent={SelectItem}
-            icon={form.values.carbonToken ? <Test /> : undefined}
+            icon={
+              form.values.carbonToken ? (
+                <Icon token={form.values.carbonToken} />
+              ) : undefined
+            }
             value={form.values.carbonToken}
             onChange={(e: string) => {
               handleCarbonToken(form.values.paymentMethod, e);

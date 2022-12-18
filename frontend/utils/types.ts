@@ -7,4 +7,4 @@ export type carbonTokensProps = {
   label: string;
   value: string;
   image: string;
-}[];
+};
