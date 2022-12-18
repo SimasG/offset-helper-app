@@ -242,7 +242,12 @@ const Form = () => {
     }
   };
 
-  // const state1 = !!form.values.offsetMethod && !!form.values.paymentMethod && !paymentMethodPoolToken && formCompleted && !!estimate;
+  const validForm =
+    !!form.values.offsetMethod &&
+    !!form.values.paymentMethod &&
+    !paymentMethodPoolToken &&
+    formCompleted &&
+    !!estimate;
 
   return (
     <>
@@ -304,64 +309,42 @@ const Form = () => {
           />
         </div>
 
-        {/* 
-            {
-              state1 && (
-                <>
-                {
-                  paymentMethodNotPoolTokenOffsetMethodPoolToken ? () : ()
-                }
-                </>
-              )
-            } */}
-
         {/* Estimates */}
-        {form.values.offsetMethod && form.values.paymentMethod && (
+        {validForm && (
           <>
-            {paymentMethodPoolToken ? null : (
-              <>
-                {formCompleted
-                  ? paymentMethodNotPoolTokenOffsetMethodPoolToken
-                    ? estimate && (
-                        <p className="text-[14px] text-gray-400 pt-1">
-                          <>
-                            Estimated cost:{" "}
-                            {form.values.paymentMethod === "usdc"
-                              ? (
-                                  parseInt(estimate.toString()) /
-                                  USDCDenominator
-                                ).toFixed(2)
-                              : (
-                                  parseInt(estimate.toString()) / ETHDenominator
-                                ).toFixed(2)}{" "}
-                            {form.values.paymentMethod.toUpperCase()}
-                          </>
-                        </p>
+            {paymentMethodNotPoolTokenOffsetMethodPoolToken ? (
+              <p className="text-[14px] text-gray-400 pt-1">
+                <>
+                  Estimated cost:{" "}
+                  {form.values.paymentMethod === "usdc"
+                    ? (parseInt(estimate.toString()) / USDCDenominator).toFixed(
+                        2
                       )
-                    : estimate && (
-                        <p className="text-[14px] text-gray-400 pt-1">
-                          <>
-                            Equivalent to offsetting{" "}
-                            {(
-                              parseInt(estimate.toString()) / ETHDenominator
-                            ).toFixed(2)}{" "}
-                            {form.values.carbonToken.toUpperCase()}
-                          </>
-                        </p>
-                      )
-                  : null}
-              </>
+                    : (parseInt(estimate.toString()) / ETHDenominator).toFixed(
+                        2
+                      )}{" "}
+                  {form.values.paymentMethod.toUpperCase()}
+                </>
+              </p>
+            ) : (
+              <p className="text-[14px] text-gray-400 pt-1">
+                <>
+                  Equivalent to offsetting{" "}
+                  {(parseInt(estimate.toString()) / ETHDenominator).toFixed(2)}{" "}
+                  {form.values.carbonToken.toUpperCase()}
+                </>
+              </p>
             )}
           </>
         )}
-        {formCompleted &&
-          !paymentMethodPoolToken &&
-          form.values.amountToOffset &&
-          form.values.amountToOffset >= 50000 && (
-            <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
-              Note: large inputs significantly deteriorate exchange rate
-            </p>
-          )}
+
+        {/* Add logic for ETH? */}
+        {/* Large input warning */}
+        {validForm && form.values.amountToOffset! >= 40000 && (
+          <p className="text-[14px] text-[#FA5252] pt-1 w-[200px]">
+            Note: large inputs significantly deteriorate exchange rate
+          </p>
+        )}
 
         {/* Offset Button */}
         <div className="mt-8 font-bold text-center">
