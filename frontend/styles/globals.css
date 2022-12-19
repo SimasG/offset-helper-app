@@ -6,6 +6,13 @@
 @tailwind utilities;
 
 /* Global rules */
+:root {
+  /* Adding css variables */
+  --english-green-color: #1b4d3e;
+  --tw-gradient-from: #064e3b;
+  --tw-gradient-to: #0f172a;
+}
+
 html,
 body {
   min-height: 100%;
@@ -13,6 +20,11 @@ body {
 
 body {
   padding: 1rem;
+  background-image: linear-gradient(
+    to bottom left,
+    var(--tw-gradient-from),
+    var(--tw-gradient-to)
+  );
 }
 
 *,
