@@ -1,11 +1,18 @@
 /* Place to import a font */
-@import url("https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* Global rules */
+:root {
+  /* Adding css variables */
+  --english-green-color: #1b4d3e;
+  --tw-gradient-from: #064e3b;
+  --tw-gradient-to: #0f172a;
+}
+
 html,
 body {
   min-height: 100%;
@@ -13,6 +20,11 @@ body {
 
 body {
   padding: 1rem;
+  background-image: linear-gradient(
+    to bottom left,
+    var(--tw-gradient-from),
+    var(--tw-gradient-to)
+  );
 }
 
 *,
@@ -24,6 +36,9 @@ body {
 }
 
 /* Grouped utilities */
+.font-fire-sans-serif {
+  font-family: "Inter", serif;
+}
 
 /* Custom Mantine styling */
 .mantine-Select-label,
@@ -36,11 +51,13 @@ body {
 }
 
 .mantine-InputWrapper-label {
-  font-family: "Fira Sans", serif;
+  font-family: "Inter", serif;
+  color: #374151;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .mantine-Select-input {
-  width: 250px;
   height: 50px;
   font-size: 1rem;
 }
@@ -50,7 +67,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 1rem;
-  font-family: "Fira Sans", serif;
+  font-family: "Inter", serif;
 }
 
 .mantine-Select-label,
@@ -59,11 +76,6 @@ body {
 }
 
 .mantine-NumberInput-input {
-  width: 250px;
   height: 50px;
   font-size: 1rem;
-}
-
-.xxx {
-  background-color: yellow;
 }
