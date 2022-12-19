@@ -258,132 +258,138 @@ const Form = () => {
 
   return (
     <>
-      <form
-        onSubmit={form.onSubmit(handleSubmit, handleError)}
-        className="px-8 py-4 sm:px-20 sm:py-10 bg-white rounded-lg shadow-sm drop-shadow-md shadow-[#d4eed4]"
-        className=""
-      >
-        {/* Input Container */}
-        <div className="flex flex-col gap-4">
-          {/* Payment Method */}
-          <Select
-            label="Payment Method"
-            placeholder="Select an option"
-            {...form.getInputProps("paymentMethod")}
-            data={paymentMethods}
-            itemComponent={SelectItem}
-            icon={
-              form.values.paymentMethod ? (
-                <Icon token={form.values.paymentMethod} />
-              ) : undefined
-            }
-            value={form.values.paymentMethod}
-            onChange={(e: string) => {
-              handlePaymentMethod(e);
-            }}
-            className="text-5xl"
-          />
+      <div className="flex items-center justify-center w-full h-full">
+        <form
+          onSubmit={form.onSubmit(handleSubmit, handleError)}
+          // className="sm:px-20 sm:py-10 bg-white rounded-lg shadow-sm drop-shadow-md shadow-[#d4eed4]"
+          className="bg-white rounded-lg sm:w-4/5 lg:w-2/3"
+        >
+          <div className="p-8">
+            {/* Input Container */}
+            <div className="flex flex-col gap-4">
+              {/* Payment Method */}
+              <Select
+                label="PAYMENT METHOD"
+                {...form.getInputProps("paymentMethod")}
+                data={paymentMethods}
+                itemComponent={SelectItem}
+                icon={
+                  form.values.paymentMethod ? (
+                    <Icon token={form.values.paymentMethod} />
+                  ) : undefined
+                }
+                rightSection={<></>}
+                value={form.values.paymentMethod}
+                onChange={(e: string) => {
+                  handlePaymentMethod(e);
+                }}
+                className="text-5xl"
+              />
 
-          {/* Carbon Token */}
-          <Select
-            label="Carbon Token to Offset"
-            placeholder="Select an option"
-            {...form.getInputProps("carbonToken")}
-            data={carbonTokens}
-            itemComponent={SelectItem}
-            icon={
-              form.values.carbonToken ? (
-                <Icon token={form.values.carbonToken} />
-              ) : undefined
-            }
-            value={form.values.carbonToken}
-            onChange={(e: string) => {
-              handleCarbonToken(form.values.paymentMethod, e);
-            }}
-          />
+              {/* Carbon Token */}
+              <Select
+                label="CARBON TOKEN TO OFFSET"
+                {...form.getInputProps("carbonToken")}
+                data={carbonTokens}
+                itemComponent={SelectItem}
+                icon={
+                  form.values.carbonToken ? (
+                    <Icon token={form.values.carbonToken} />
+                  ) : undefined
+                }
+                rightSection={<></>}
+                value={form.values.carbonToken}
+                onChange={(e: string) => {
+                  handleCarbonToken(form.values.paymentMethod, e);
+                }}
+              />
 
-          {/* Offset Method */}
-          <Select
-            label="Offset Method"
-            placeholder="Select an option"
-            {...form.getInputProps("offsetMethod")}
-            data={offsetMethods}
-            value={form.values.offsetMethod}
-            onChange={(e: string) => {
-              handleOffsetMethod(e);
-            }}
-          />
+              {/* Offset Method */}
+              <Select
+                label="OFFSET METHOD"
+                {...form.getInputProps("offsetMethod")}
+                data={offsetMethods}
+                rightSection={<></>}
+                value={form.values.offsetMethod}
+                onChange={(e: string) => {
+                  handleOffsetMethod(e);
+                }}
+              />
 
-          {/* Amount to Offset */}
-          <NumberInput
-            label={`Amount of ${form.values.offsetMethod.toUpperCase()} to Offset`}
-            {...form.getInputProps("amountToOffset")}
-            min={0}
-            max={100000}
-            precision={3}
-            placeholder={0}
-            removeTrailingZeros={true}
-          />
-        </div>
+              {/* Amount to Offset */}
+              <NumberInput
+                label={`${form.values.offsetMethod.toUpperCase()} AMOUNT TO OFFSET`}
+                {...form.getInputProps("amountToOffset")}
+                min={0}
+                max={100000}
+                precision={3}
+                placeholder={0}
+                removeTrailingZeros={true}
+              />
+            </div>
 
-        {/* Estimates */}
-        {validForm && !paymentMethodPoolToken && (
-          <>
-            {paymentMethodNotPoolTokenOffsetMethodPoolToken ? (
-              <p className="text-[12px] text-gray-400 pt-1">
-                <>
-                  Estimated cost:{" "}
-                  {form.values.paymentMethod === "usdc"
-                    ? USDCToString
-                    : ETHToString}{" "}
-                  {form.values.paymentMethod.toUpperCase()}
-                </>
-              </p>
-            ) : (
-              <p className="text-[12px] text-gray-400 pt-1">
-                <>
-                  Equivalent to offsetting {ETHToString}{" "}
-                  {form.values.carbonToken.toUpperCase()}
-                </>
-              </p>
-            )}
-          </>
-        )}
-
-        {/* Large input warning */}
-        {validForm && !paymentMethodPoolToken && (
-          <>
-            {form.values.paymentMethod === "weth" ? (
+            {/* Estimates */}
+            {validForm && !paymentMethodPoolToken && (
               <>
-                {form.values.amountToOffset! >= 40 && (
-                  <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
-                    Note: large inputs significantly deteriorate exchange rate
+                {paymentMethodNotPoolTokenOffsetMethodPoolToken ? (
+                  <p className="text-[12px] text-gray-400 pt-1">
+                    <>
+                      Estimated cost:{" "}
+                      {form.values.paymentMethod === "usdc"
+                        ? USDCToString
+                        : ETHToString}{" "}
+                      {form.values.paymentMethod.toUpperCase()}
+                    </>
                   </p>
-                )}
-              </>
-            ) : (
-              <>
-                {form.values.amountToOffset! >= 40000 && (
-                  <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
-                    Note: large inputs significantly deteriorate exchange rate
+                ) : (
+                  <p className="text-[12px] text-gray-400 pt-1">
+                    <>
+                      Equivalent to offsetting {ETHToString}{" "}
+                      {form.values.carbonToken.toUpperCase()}
+                    </>
                   </p>
                 )}
               </>
             )}
-          </>
-        )}
 
-        {/* Offset Button */}
-        <div className="mt-8 font-bold text-center">
-          <button
-            disabled={loading}
-            className="px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-300 drop-shadow-lg disabled:opacity-50 disabled:bg-green-300"
-            type="submit"
-          >
-            OFFSET
-          </button>
-        </div>
-      </form>
+            {/* Large input warning */}
+            {validForm && !paymentMethodPoolToken && (
+              <>
+                {form.values.paymentMethod === "weth" ? (
+                  <>
+                    {form.values.amountToOffset! >= 40 && (
+                      <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
+                        Note: large inputs significantly deteriorate exchange
+                        rate
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {form.values.amountToOffset! >= 40000 && (
+                      <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
+                        Note: large inputs significantly deteriorate exchange
+                        rate
+                      </p>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Offset Button */}
+          <div className="font-bold text-center">
+            <button
+              disabled={loading}
+              className="w-full py-4 text-sm font-semibold text-white uppercase transition-colors rounded-b font-fire-sans-serif bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:bg-green-300"
+              type="submit"
+            >
+              Offset
+            </button>
+          </div>
+        </form>
+      </div>
     </>
   );
 };
