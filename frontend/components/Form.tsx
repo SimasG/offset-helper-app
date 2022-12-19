@@ -262,7 +262,7 @@ const Form = () => {
         <form
           onSubmit={form.onSubmit(handleSubmit, handleError)}
           // className="sm:px-20 sm:py-10 bg-white rounded-lg shadow-sm drop-shadow-md shadow-[#d4eed4]"
-          className="bg-white rounded-lg sm:w-4/5 lg:w-2/3"
+          className="w-5/6 bg-white rounded-lg sm:w-4/5 lg:w-2/3"
         >
           <div className="p-8">
             {/* Input Container */}
