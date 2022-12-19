@@ -184,7 +184,6 @@ contract OffsetHelper is OffsetHelperStorage {
         returns (address[] memory tco2s, uint256[] memory amounts)
     {
         // swap MATIC for BCT / NCT
-        // ** The problem is here
         swapExactOutETH(_poolToken, _amountToOffset);
 
         // redeem BCT / NCT for TCO2s
@@ -333,8 +332,9 @@ contract OffsetHelper is OffsetHelperStorage {
         // * Checks-Effects-Interactions change
         // Although here it seems to not be a security issue since no
         // user in their right mind do a re-entrancy attack as it would
-        // drain their own balances without being reflect in the contract
+        // drain their own balances without being reflected in the contract
         balances[msg.sender][_erc20Addr] += _amount;
+        // ** Can I also use .transferFrom/.safeTransferFrom without needing to approve the txs?
         IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
@@ -505,7 +505,6 @@ contract OffsetHelper is OffsetHelperStorage {
         );
 
         // approve router
-        // ** `IERC20` here is actually `safeERC20`, right? Since `using SafeERC20 for IERC20`
         IERC20(_fromToken).approve(sushiRouterAddress, amountIn);
 
         // swap
@@ -518,7 +517,6 @@ contract OffsetHelper is OffsetHelperStorage {
         );
 
         // remove remaining approval if less input token was consumed
-        // ** Don't understand this
         if (amounts[0] < amountIn) {
             IERC20(_fromToken).approve(sushiRouterAddress, 0);
         }

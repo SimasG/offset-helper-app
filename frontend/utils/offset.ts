@@ -99,12 +99,12 @@ const autoOffsetPoolToken = async (
     return;
   }
 
-  await (
-    await poolTokenContract.approve(
-      OHPolygonAddress,
-      ethers.utils.parseEther(amountToOffset.toString())
-    )
-  ).wait();
+  // await (
+  //   await poolTokenContract.approve(
+  //     OHPolygonAddress,
+  //     ethers.utils.parseEther(amountToOffset.toString())
+  //   )
+  // ).wait();
 
   const offsetTx = await oh.autoOffsetPoolToken(
     poolToken,
@@ -149,13 +149,6 @@ const autoOffsetExactOutETH = async ({
       return;
     }
   }
-
-  console.log("poolToken:", poolToken);
-  console.log(
-    "amountToOffset:",
-    ethers.utils.parseEther(amountToOffset.toString())
-  );
-  console.log("value:", estimate);
 
   // ** Not sure why I don't need to approve the MATIC tx here
   const offsetTx = await oh.autoOffsetExactOutETH(
@@ -246,6 +239,7 @@ const autoOffsetExactOutToken = async ({
 
   const userTokenBalance = await depositedTokenContract.balanceOf(userAddress);
 
+  // Checking if there's enough token to be offset in user's balance
   if (estimate) {
     if (paymentMethod === "usdc") {
       if (

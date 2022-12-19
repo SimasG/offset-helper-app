@@ -99,6 +99,14 @@ const Form = () => {
     formCompleted &&
     !!estimate;
 
+  // Converting BigNumber with 18 decimals to string
+  const ETHToString =
+    estimate && (parseInt(estimate.toString()) / ETHDenominator).toFixed(2);
+
+  // Converting BigNumber with 6 decimals to string
+  const USDCToString =
+    estimate && (parseInt(estimate.toString()) / USDCDenominator).toFixed(2);
+
   /**
    * @description sets form values & updates `carbonTokens` and `offsetMethods` arrays according to selected payment method
    * @param paymentMethod payment method selected by user
@@ -248,8 +256,6 @@ const Form = () => {
     }
   };
 
-  console.log("form.values:", form.values);
-
   return (
     <>
       <form
@@ -327,20 +333,15 @@ const Form = () => {
                 <>
                   Estimated cost:{" "}
                   {form.values.paymentMethod === "usdc"
-                    ? (parseInt(estimate.toString()) / USDCDenominator).toFixed(
-                        2
-                      )
-                    : (parseInt(estimate.toString()) / ETHDenominator).toFixed(
-                        2
-                      )}{" "}
+                    ? USDCToString
+                    : ETHToString}{" "}
                   {form.values.paymentMethod.toUpperCase()}
                 </>
               </p>
             ) : (
               <p className="text-[12px] text-gray-400 pt-1">
                 <>
-                  Equivalent to offsetting{" "}
-                  {(parseInt(estimate.toString()) / ETHDenominator).toFixed(2)}{" "}
+                  Equivalent to offsetting {ETHToString}{" "}
                   {form.values.carbonToken.toUpperCase()}
                 </>
               </p>
@@ -375,7 +376,7 @@ const Form = () => {
         <div className="mt-8 font-bold text-center">
           <button
             disabled={loading}
-            className="px-4 py-2 text-white bg-green-500 rounded-sm hover:bg-green-300 drop-shadow-lg disabled:opacity-50 disabled:bg-green-300"
+            className="px-4 py-2 text-white bg-green-500 rounded-md hover:bg-green-300 drop-shadow-lg disabled:opacity-50 disabled:bg-green-300"
             type="submit"
           >
             OFFSET
