@@ -157,6 +157,7 @@ describe("OffsetHelper", function () {
       await fromToken.approve(offsetHelper.address, fromAmount);
 
       const supplyBefore = await poolToken.totalSupply();
+
       await expect(
         offsetHelper.autoOffsetExactInToken(
           fromToken.address,
@@ -269,13 +270,6 @@ describe("OffsetHelper", function () {
           ONE_ETHER
         );
 
-        console.log(
-          "poolToken:",
-          poolToken.name === "BCT" ? addresses.bct : addresses.nct
-        );
-        console.log("amountToOffset:", ONE_ETHER);
-        console.log("value:", maticCost);
-
         // then we use the autoOffset function to retire 1.0 TCO2 from MATIC using NCT
         const tx = await (
           await offsetHelper.autoOffsetExactOutETH(
@@ -305,7 +299,7 @@ describe("OffsetHelper", function () {
         ).to.equal("1.0");
       });
 
-      it(`should retire 1.0 TCO2 using a ${name.toUpperCase()} deposit and ${name.toUpperCase()} redemption`, async function () {
+      it.only(`should retire 1.0 TCO2 using a ${name.toUpperCase()} deposit and ${name.toUpperCase()} redemption`, async function () {
         const { offsetHelper, addr2, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );

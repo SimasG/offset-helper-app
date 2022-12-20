@@ -460,6 +460,7 @@ contract OffsetHelper is OffsetHelperStorage {
         address[] memory path = generatePath(fromToken, _toToken);
 
         // swap
+        // ** Does MATIC get auto-wrapped into WMATIC here?
         uint256[] memory amounts = routerSushi().swapExactETHForTokens{
             value: msg.value
         }(0, path, address(this), block.timestamp);

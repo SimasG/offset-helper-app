@@ -21,7 +21,6 @@ const Form = () => {
   const [offsetMethods, setOffsetMethods] = useState<offsetMethodsProps>([
     { label: "Specify BCT", value: "bct" },
     { label: "Specify NCT", value: "nct" },
-    { label: "Specify WMATIC", value: "wmatic" },
     { label: "Specify USDC", value: "usdc" },
     { label: "Specify WETH", value: "weth" },
     { label: "Specify MATIC", value: "matic" },

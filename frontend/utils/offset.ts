@@ -32,14 +32,12 @@ const handleOffset = async ({
     await autoOffsetPoolToken(paymentMethod, amountToOffset);
   } else if (paymentMethod === "matic") {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
-      // ** Doesn't work
       await autoOffsetExactOutETH({
         offsetMethod: offsetMethod,
         amountToOffset: amountToOffset,
         estimate: estimate,
       });
     } else {
-      // ** Doesn't work
       await autoOffsetExactInETH(offsetMethod, amountToOffset);
     }
   } else {
@@ -248,6 +246,7 @@ const autoOffsetExactOutToken = async ({
         toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
         return;
       }
+      // ** Should I add custom logic for WMATIC?
     } else {
       if (
         parseFloat(ethers.utils.formatEther(userTokenBalance)) <
@@ -307,11 +306,7 @@ const autoOffsetExactInToken = async ({
 
   const userAddress = await signer.getAddress();
 
-  // ** WMATIC still confuses the hell out of me
-  const userTokenBalance =
-    paymentMethod === "wmatic"
-      ? await signer.getBalance()
-      : await depositedTokenContract.balanceOf(userAddress);
+  const userTokenBalance = await depositedTokenContract.balanceOf(userAddress);
 
   const amountToOffsetBN =
     paymentMethod === "usdc"
