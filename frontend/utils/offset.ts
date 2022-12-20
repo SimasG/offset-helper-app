@@ -29,32 +29,37 @@ const handleOffset = async ({
   // if amountToOffset === undefined | null, then 0
   amountToOffset = amountToOffset ?? 0;
   if (paymentMethod === "bct" || paymentMethod === "nct") {
-    await autoOffsetPoolToken(paymentMethod, amountToOffset);
+    const tx = await autoOffsetPoolToken(paymentMethod, amountToOffset);
+    return tx;
   } else if (paymentMethod === "matic") {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
-      await autoOffsetExactOutETH({
+      const tx = await autoOffsetExactOutETH({
         offsetMethod: offsetMethod,
         amountToOffset: amountToOffset,
         estimate: estimate,
       });
+      return tx;
     } else {
-      await autoOffsetExactInETH(offsetMethod, amountToOffset);
+      const tx = await autoOffsetExactInETH(offsetMethod, amountToOffset);
+      return tx;
     }
   } else {
     if (offsetMethod === "bct" || offsetMethod === "nct") {
-      await autoOffsetExactOutToken({
+      const tx = await autoOffsetExactOutToken({
         paymentMethod: paymentMethod,
         offsetMethod: offsetMethod,
         amountToOffset: amountToOffset,
         estimate: estimate,
       });
+      return tx;
     } else {
-      await autoOffsetExactInToken({
+      const tx = await autoOffsetExactInToken({
         paymentMethod: paymentMethod,
         offsetMethod: offsetMethod,
         amountToOffset: amountToOffset,
         estimate: estimate,
       });
+      return tx;
     }
   }
 };
@@ -108,9 +113,8 @@ const autoOffsetPoolToken = async (
     ethers.utils.parseEther(amountToOffset.toString())
   );
   await offsetTx.wait();
-  console.log("offset hash", offsetTx.hash);
 
-  return offsetTx.hash;
+  return offsetTx;
 };
 
 /**
@@ -156,9 +160,8 @@ const autoOffsetExactOutETH = async ({
     }
   );
   await offsetTx.wait();
-  console.log("offset hash", offsetTx.hash);
 
-  return offsetTx.hash;
+  return offsetTx;
 };
 
 /**
@@ -196,7 +199,8 @@ const autoOffsetExactInETH = async (
   });
 
   await offsetTx.wait();
-  console.log("offset hash", offsetTx.hash);
+
+  return offsetTx;
 };
 
 /**
@@ -268,7 +272,8 @@ const autoOffsetExactOutToken = async ({
     ethers.utils.parseEther(amountToOffset.toString())
   );
   await offsetTx.wait();
-  console.log("offset hash", offsetTx.hash);
+
+  return offsetTx;
 };
 
 /**
@@ -332,5 +337,6 @@ const autoOffsetExactInToken = async ({
   );
 
   await offsetTx.wait();
-  console.log("offset hash", offsetTx.hash);
+
+  return offsetTx;
 };

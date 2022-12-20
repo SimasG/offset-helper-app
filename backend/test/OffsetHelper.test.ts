@@ -222,6 +222,7 @@ describe("OffsetHelper", function () {
       expect(expOffset).to.be.greaterThan(0);
 
       const supplyBefore = await poolToken.totalSupply();
+
       await expect(
         offsetHelper.autoOffsetExactInETH(poolToken.address, {
           value: fromAmount,
@@ -299,7 +300,7 @@ describe("OffsetHelper", function () {
         ).to.equal("1.0");
       });
 
-      it.only(`should retire 1.0 TCO2 using a ${name.toUpperCase()} deposit and ${name.toUpperCase()} redemption`, async function () {
+      it(`should retire 1.0 TCO2 using a ${name.toUpperCase()} deposit and ${name.toUpperCase()} redemption`, async function () {
         const { offsetHelper, addr2, tokens } = await loadFixture(
           deployOffsetHelperFixture
         );
@@ -320,8 +321,6 @@ describe("OffsetHelper", function () {
           poolToken.name === "BCT" ? addresses.bct : addresses.nct,
           ONE_ETHER
         );
-
-        console.log("autoOffsetPoolToken txHash:", txHash);
 
         // then we set the chain state after the transaction
         const poolTokenBalanceAfter = await poolToken

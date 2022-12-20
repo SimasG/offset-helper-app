@@ -12,7 +12,6 @@ import { paymentMethods } from "../utils/paymentMethods";
 import { carbonTokensProps, offsetMethodsProps } from "../utils/types";
 import handleOffset from "../utils/offset";
 import Icon from "./Icon";
-import Link from "next/link";
 
 const Form = () => {
   const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
@@ -205,40 +204,45 @@ const Form = () => {
     }
   };
 
-  const offsetComponent = (data: any) => {
+  const offsetSuccess = (tx: any) => {
+    console.log("tx:", tx);
     return (
       <div className="flex flex-col w-full gap-2">
         <div>
           <h3 className="text-xs font-semibold">Transaction Completed</h3>
           <p className="text-[11px]">
-            Successfully offset <>{estimate}</> {form.values.carbonToken} for{" "}
-            {form.values.amountToOffset}{" "}
+            Successfully offset{" "}
+            <>
+              {estimate &&
+                (parseInt(estimate.toString()) / ETHDenominator).toFixed(2)}
+            </>{" "}
+            {form.values.carbonToken} for {form.values.amountToOffset}{" "}
             {form.values.paymentMethod.toUpperCase()}
           </p>
         </div>
         <div className="flex items-center justify-center h-full">
           <div className="w-full text-center">
-            <Link
-              href={`https://polygonscan.com/tx/${data.hash}`}
+            <a
+              target="_blank"
+              href={`https://polygonscan.com/tx/${tx.hash}`}
+              rel="noopener noreferrer"
               className="text-xs text-blue-500"
             >
               Details
-            </Link>
+            </a>
           </div>
           <div className="w-full text-center">
-            <button className="text-xs text-blue-500">Dismiss</button>
+            <button
+              className="text-xs text-blue-500"
+              onClick={() => toast.dismiss()}
+            >
+              Dismiss
+            </button>
           </div>
         </div>
       </div>
     );
   };
-
-  // const myPromise = new Promise<void>((resolve, reject) => {
-  //   setTimeout(() => {
-  //     resolve();
-  //     console.log("zdare");
-  //   }, 2000);
-  // });
 
   /**
    * @description handles form submission (i.e. submission to offset)
@@ -249,24 +253,22 @@ const Form = () => {
     try {
       if (isConnected) {
         {
-          const offsetTx = await handleOffset({
-            paymentMethod: values.paymentMethod,
-            offsetMethod: values.offsetMethod,
-            amountToOffset: values.amountToOffset,
-            estimate: estimate,
-          });
-          setLoading(false);
-          if (offsetTx === undefined) return;
           toast.promise(
-            offsetTx,
+            handleOffset({
+              paymentMethod: values.paymentMethod,
+              offsetMethod: values.offsetMethod,
+              amountToOffset: values.amountToOffset,
+              estimate: estimate,
+            }),
             {
-              loading: "Offsetting..",
-              success: (data) => offsetComponent(data),
+              loading: "Offsetting...",
+              success: (tx) => offsetSuccess(tx),
               error: (err) => `Error offsetting: ${err.toString()}`,
             },
             {
               style: {
                 minWidth: "250px",
+                maxWidth: "750px",
               },
               success: {
                 duration: 10000,
@@ -274,6 +276,7 @@ const Form = () => {
               },
             }
           );
+          setLoading(false);
         }
       } else {
         toast.error("Connect to a Wallet first!");
