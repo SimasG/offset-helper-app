@@ -207,47 +207,38 @@ const Form = () => {
 
   const offsetComponent = (data: any) => {
     return (
-      <>
+      <div className="flex flex-col w-full gap-2">
         <div>
-          <h3>Transaction Completed</h3>
-          <p>
+          <h3 className="text-xs font-semibold">Transaction Completed</h3>
+          <p className="text-[11px]">
             Successfully offset <>{estimate}</> {form.values.carbonToken} for{" "}
             {form.values.amountToOffset}{" "}
             {form.values.paymentMethod.toUpperCase()}
           </p>
         </div>
-        <div>
-          <Link href={`https://polygonscan.com/tx/123`}>Details</Link>
-          <button>Dismiss</button>
+        <div className="flex items-center justify-center h-full">
+          <div className="w-full text-center">
+            <Link
+              href={`https://polygonscan.com/tx/${data.hash}`}
+              className="text-xs text-blue-500"
+            >
+              Details
+            </Link>
+          </div>
+          <div className="w-full text-center">
+            <button className="text-xs text-blue-500">Dismiss</button>
+          </div>
         </div>
-      </>
+      </div>
     );
   };
 
-  const myPromise = new Promise<void>((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-      console.log("zdare");
-    }, 5000);
-  });
-
-  toast.promise(
-    myPromise,
-    {
-      loading: "Offsetting..",
-      success: (data) => offsetComponent(data),
-      error: (err) => `Error offsetting: ${err.toString()}`,
-    },
-    {
-      style: {
-        minWidth: "250px",
-      },
-      success: {
-        duration: 5000,
-        icon: "💚",
-      },
-    }
-  );
+  // const myPromise = new Promise<void>((resolve, reject) => {
+  //   setTimeout(() => {
+  //     resolve();
+  //     console.log("zdare");
+  //   }, 2000);
+  // });
 
   /**
    * @description handles form submission (i.e. submission to offset)
@@ -278,16 +269,11 @@ const Form = () => {
                 minWidth: "250px",
               },
               success: {
-                duration: 5000,
+                duration: 10000,
                 icon: "💚",
               },
             }
           );
-          // toast.success(
-          //   `${
-          //     form.values.amountToOffset
-          //   } ${form.values.paymentMethod.toUpperCase()} has been offset!`
-          // );
         }
       } else {
         toast.error("Connect to a Wallet first!");
