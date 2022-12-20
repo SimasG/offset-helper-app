@@ -428,10 +428,9 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // swap
         // ** `swapETHForExactTokens()` requires first address in the path to be WETH but we use MATIC here
-        // ** How does this work?
+        // ** How does this work? I guess WMATIC = WETH in this case.
 
         // ** Don't I need to approve the transfer of my MATIC first?
-        // ** Where do I specify `msg.value`? This could be the reason for errors.
         uint256[] memory amounts = routerSushi().swapETHForExactTokens{
             value: msg.value
         }(_toAmount, path, address(this), block.timestamp);
@@ -505,6 +504,8 @@ contract OffsetHelper is OffsetHelperStorage {
         );
 
         // approve router
+        // ** 1. Does OH contract (not user) have approve the router contract?
+        // ** 2. If so, does OH contract approve it automatically?
         IERC20(_fromToken).approve(sushiRouterAddress, amountIn);
 
         // swap

@@ -5,7 +5,12 @@ import { Toaster } from "react-hot-toast";
 
 // Additional `rainbowkit` & `wagmi` setup
 import "@rainbow-me/rainbowkit/styles.css";
-import { getDefaultWallets, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import {
+  darkTheme,
+  getDefaultWallets,
+  midnightTheme,
+  RainbowKitProvider,
+} from "@rainbow-me/rainbowkit";
 import { configureChains, createClient, WagmiConfig, chain } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import { alchemyProvider } from "wagmi/providers/alchemy";
@@ -52,7 +57,12 @@ function MyApp({ Component, pageProps }: AppProps) {
           },
         }}
       />
-      <RainbowKitProvider chains={chains}>
+      <RainbowKitProvider
+        theme={midnightTheme({
+          accentColor: "#10A581",
+        })}
+        chains={chains}
+      >
         <main className={ubuntu.className}>
           <Component {...pageProps} />
         </main>

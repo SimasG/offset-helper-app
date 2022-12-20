@@ -261,7 +261,6 @@ const Form = () => {
       <div className="flex items-center justify-center w-full h-full">
         <form
           onSubmit={form.onSubmit(handleSubmit, handleError)}
-          // className="sm:px-20 sm:py-10 bg-white rounded-lg shadow-sm drop-shadow-md shadow-[#d4eed4]"
           className="w-5/6 bg-white rounded-lg sm:w-4/5 lg:w-2/3"
         >
           <div className="p-8">
@@ -367,7 +366,7 @@ const Form = () => {
                 ) : (
                   <>
                     {form.values.amountToOffset! >= 40000 && (
-                      <p className="text-[12px] text-[#FA5252] pt-1 w-[200px]">
+                      <p className="text-[12px] text-[#FA5252] pt-1">
                         Note: large inputs significantly deteriorate exchange
                         rate
                       </p>

@@ -60,6 +60,7 @@ body {
 .mantine-Select-input {
   height: 50px;
   font-size: 1rem;
+  color: #374151;
 }
 
 .mantine-Select-item {
@@ -78,4 +79,5 @@ body {
 .mantine-NumberInput-input {
   height: 50px;
   font-size: 1rem;
+  color: #374151;
 }

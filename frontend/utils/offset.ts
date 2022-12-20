@@ -94,17 +94,16 @@ const autoOffsetPoolToken = async (
     parseFloat(ethers.utils.formatEther(userPoolTokenBalance)) <
     parseFloat(ethers.utils.formatEther(amountToOffsetBN))
   ) {
-    // ** Wonder if toast would work here?
     toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
     return;
   }
 
-  // await (
-  //   await poolTokenContract.approve(
-  //     OHPolygonAddress,
-  //     ethers.utils.parseEther(amountToOffset.toString())
-  //   )
-  // ).wait();
+  await (
+    await poolTokenContract.approve(
+      OHPolygonAddress,
+      ethers.utils.parseEther(amountToOffset.toString())
+    )
+  ).wait();
 
   const offsetTx = await oh.autoOffsetPoolToken(
     poolToken,
