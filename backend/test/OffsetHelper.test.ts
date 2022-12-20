@@ -316,10 +316,12 @@ describe("OffsetHelper", function () {
         await (
           await poolToken.token().approve(offsetHelper.address, ONE_ETHER)
         ).wait();
-        await offsetHelper.autoOffsetPoolToken(
+        const txHash = await offsetHelper.autoOffsetPoolToken(
           poolToken.name === "BCT" ? addresses.bct : addresses.nct,
           ONE_ETHER
         );
+
+        console.log("autoOffsetPoolToken txHash:", txHash);
 
         // then we set the chain state after the transaction
         const poolTokenBalanceAfter = await poolToken

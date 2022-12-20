@@ -12,6 +12,7 @@ import { paymentMethods } from "../utils/paymentMethods";
 import { carbonTokensProps, offsetMethodsProps } from "../utils/types";
 import handleOffset from "../utils/offset";
 import Icon from "./Icon";
+import Link from "next/link";
 
 const Form = () => {
   const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
@@ -204,6 +205,50 @@ const Form = () => {
     }
   };
 
+  const offsetComponent = (data: any) => {
+    return (
+      <>
+        <div>
+          <h3>Transaction Completed</h3>
+          <p>
+            Successfully offset <>{estimate}</> {form.values.carbonToken} for{" "}
+            {form.values.amountToOffset}{" "}
+            {form.values.paymentMethod.toUpperCase()}
+          </p>
+        </div>
+        <div>
+          <Link href={`https://polygonscan.com/tx/123`}>Details</Link>
+          <button>Dismiss</button>
+        </div>
+      </>
+    );
+  };
+
+  const myPromise = new Promise<void>((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+      console.log("zdare");
+    }, 5000);
+  });
+
+  toast.promise(
+    myPromise,
+    {
+      loading: "Offsetting..",
+      success: (data) => offsetComponent(data),
+      error: (err) => `Error offsetting: ${err.toString()}`,
+    },
+    {
+      style: {
+        minWidth: "250px",
+      },
+      success: {
+        duration: 5000,
+        icon: "💚",
+      },
+    }
+  );
+
   /**
    * @description handles form submission (i.e. submission to offset)
    * @param values form values object
@@ -220,13 +265,29 @@ const Form = () => {
             estimate: estimate,
           });
           setLoading(false);
-          console.log("offsetTx:", offsetTx);
           if (offsetTx === undefined) return;
-          toast.success(
-            `${
-              form.values.amountToOffset
-            } ${form.values.paymentMethod.toUpperCase()} has been offset!`
+          toast.promise(
+            offsetTx,
+            {
+              loading: "Offsetting..",
+              success: (data) => offsetComponent(data),
+              error: (err) => `Error offsetting: ${err.toString()}`,
+            },
+            {
+              style: {
+                minWidth: "250px",
+              },
+              success: {
+                duration: 5000,
+                icon: "💚",
+              },
+            }
           );
+          // toast.success(
+          //   `${
+          //     form.values.amountToOffset
+          //   } ${form.values.paymentMethod.toUpperCase()} has been offset!`
+          // );
         }
       } else {
         toast.error("Connect to a Wallet first!");
