@@ -250,7 +250,6 @@ const autoOffsetExactOutToken = async ({
         toast.error(`Insufficient ${paymentMethod.toUpperCase()} balance`);
         return;
       }
-      // ** Should I add custom logic for WMATIC?
     } else {
       if (
         parseFloat(ethers.utils.formatEther(userTokenBalance)) <

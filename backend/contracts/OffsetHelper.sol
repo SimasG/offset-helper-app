@@ -335,6 +335,7 @@ contract OffsetHelper is OffsetHelperStorage {
         // drain their own balances without being reflected in the contract
         balances[msg.sender][_erc20Addr] += _amount;
         // ** Can I also use .transferFrom/.safeTransferFrom without needing to approve the txs?
+        // ** They're probably already approved by the user from the UI.
         IERC20(_erc20Addr).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
@@ -506,7 +507,7 @@ contract OffsetHelper is OffsetHelperStorage {
 
         // approve router
         // ** 1. Does OH contract (not user) have approve the router contract?
-        // ** 2. If so, does OH contract approve it automatically?
+        // ** 2. If so, does OH contract approve it automatically? It seems so.
         IERC20(_fromToken).approve(sushiRouterAddress, amountIn);
 
         // swap

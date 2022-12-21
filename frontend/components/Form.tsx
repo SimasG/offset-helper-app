@@ -9,7 +9,11 @@ import { BigNumber } from "ethers";
 import { ETHDenominator, USDCDenominator } from "../constants/constants";
 import SelectItem from "./SelectItem";
 import { paymentMethods } from "../utils/paymentMethods";
-import { carbonTokensProps, offsetMethodsProps } from "../utils/types";
+import {
+  carbonTokensProps,
+  offsetMethodsProps,
+  transactionProps,
+} from "../utils/types";
 import handleOffset from "../utils/offset";
 import Icon from "./Icon";
 
@@ -204,7 +208,7 @@ const Form = () => {
     }
   };
 
-  const offsetSuccess = (tx: any) => {
+  const offsetSuccess = (tx: transactionProps) => {
     console.log("tx:", tx);
     return (
       <div className="flex flex-col w-full gap-2">

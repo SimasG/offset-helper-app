@@ -437,7 +437,7 @@ describe("OffsetHelper", function () {
           ONE_ETHER
         );
 
-        // we use the autoOffset function to retire 1.0 TCO2 from WMATIC using NCT
+        // we use the autoOffset function to retire 1.0 TCO2 from WMATIC using BCT/NCT
         await (await wmatic.approve(offsetHelper.address, wmaticCost)).wait();
         await offsetHelper.autoOffsetExactOutToken(
           addresses.wmatic,
