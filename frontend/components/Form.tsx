@@ -16,6 +16,7 @@ import {
 } from "../utils/types";
 import handleOffset from "../utils/offset";
 import Icon from "./Icon";
+import { ContractTransaction } from "ethers";
 
 const Form = () => {
   const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
@@ -208,6 +209,7 @@ const Form = () => {
     }
   };
 
+  // ** Should the type be ethers' `ContractTransaction`?
   const offsetSuccess = (tx: transactionProps) => {
     console.log("tx:", tx);
     return (
@@ -267,7 +269,7 @@ const Form = () => {
             {
               loading: "Offsetting...",
               success: (tx) => offsetSuccess(tx),
-              error: (err) => `Error offsetting: ${err.toString()}`,
+              error: (err) => `Error offsetting. Check console for details.`,
             },
             {
               style: {
