@@ -3,8 +3,13 @@ import Header from "../components/Header";
 import Head from "next/head";
 import Form from "../components/Form";
 import Footer from "../components/Footer";
+// import { calculateEmissions } from "../utils/calculator/calculateEmissions";
 
-const Home: NextPage = () => {
+type HomeProps = {
+  emissions: number;
+};
+
+const Home = ({ emissions }: HomeProps) => {
   return (
     <div>
       <Head>
@@ -37,3 +42,11 @@ const Home: NextPage = () => {
 };
 
 export default Home;
+
+// Home.getInitialProps = async () => {
+//   const emissions = await calculateEmissions(
+//     "0x619353127678b95C023530df08BCB638870cFDdA"
+//   );
+//   console.log("emissions:", emissions);
+//   return { emissions };
+// };
