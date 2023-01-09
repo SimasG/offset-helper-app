@@ -6,7 +6,6 @@ import { Toaster } from "react-hot-toast";
 // Additional `rainbowkit` & `wagmi` setup
 import "@rainbow-me/rainbowkit/styles.css";
 import {
-  darkTheme,
   getDefaultWallets,
   midnightTheme,
   RainbowKitProvider,
@@ -16,6 +15,8 @@ import { publicProvider } from "wagmi/providers/public";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 
 // Connecting chains we support with providers we have
+// ** How are these providers different from providers we instantiate with ethers?
+// ** I.e. `const provider = new ethers.providers.Web3Provider(window.ethereum)`
 const { chains, provider } = configureChains(
   [chain.polygon],
   [
