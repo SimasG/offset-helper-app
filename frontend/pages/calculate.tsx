@@ -4,6 +4,7 @@ import Head from "next/head";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import Header from "../components/Header";
+import { BiLeftArrowAlt } from "react-icons/bi";
 
 const calculate = () => {
   const [openBlockchainCalculator, setOpenBlockchainCalculator] =
@@ -104,36 +105,46 @@ const calculate = () => {
         )}
       </div>
       {openBlockchainCalculator && (
-        <div className="flex items-center justify-center w-full h-full mt-8">
-          <form
-            onSubmit={form.onSubmit(handleSubmit)}
-            className="w-5/6 bg-white rounded sm:w-3/5 md:w-2/4 lg:w-5/12"
-          >
-            <div className="p-8">
-              {/* Input Container */}
-              <div className="flex flex-col gap-4">
-                {/* Amount to Offset */}
-                <TextInput
-                  label="Address"
-                  // ** not sure if I need these props here
-                  {...form.getInputProps("address")}
-                  disabled={loading}
-                />
+        <>
+          <div className="flex flex-col items-center justify-center w-full h-full mt-8">
+            <div className="w-5/6 text-gray-300 transition-all rounded cursor-pointer sm:w-3/5 md:w-2/4 lg:w-5/12">
+              <BiLeftArrowAlt
+                className="w-8 h-8 hover:opacity-75"
+                onClick={() =>
+                  setOpenBlockchainCalculator(!openBlockchainCalculator)
+                }
+              />
+            </div>
+            <form
+              onSubmit={form.onSubmit(handleSubmit)}
+              className="w-5/6 bg-white rounded sm:w-3/5 md:w-2/4 lg:w-5/12"
+            >
+              <div className="p-8">
+                {/* Input Container */}
+                <div className="flex flex-col gap-4">
+                  {/* Amount to Offset */}
+                  <TextInput
+                    label="Address"
+                    // ** not sure if I need these props here
+                    {...form.getInputProps("address")}
+                    disabled={loading}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Calculate Button */}
-            <div className="font-bold text-center">
-              <button
-                disabled={loading}
-                className="w-full py-4 text-sm font-semibold text-white uppercase transition-colors rounded-b font-fire-sans-serif bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:bg-green-300"
-                type="submit"
-              >
-                Calculate
-              </button>
-            </div>
-          </form>
-        </div>
+              {/* Calculate Button */}
+              <div className="font-bold text-center">
+                <button
+                  disabled={loading}
+                  className="w-full py-4 text-sm font-semibold text-white uppercase transition-colors rounded-b font-fire-sans-serif bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:bg-green-300"
+                  type="submit"
+                >
+                  Calculate
+                </button>
+              </div>
+            </form>
+          </div>
+        </>
       )}
     </div>
   );
