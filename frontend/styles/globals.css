@@ -40,6 +40,17 @@ body {
   font-family: "Inter", serif;
 }
 
+.bar {
+  display: block;
+  width: 1.8rem;
+  height: 0.2rem;
+  margin: 0.3rem auto;
+  -webkit-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+  /* Don't understand why it's background-color and not just color. */
+  background-color: #d1d5db;
+}
+
 /* Custom Mantine styling */
 .mantine-Select-label,
 .mantine-NumberInput-label {
