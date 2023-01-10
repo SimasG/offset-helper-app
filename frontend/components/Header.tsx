@@ -62,15 +62,15 @@ const Header = () => {
           }
         >
           {/* Mobile */}
-          <button
-            className="z-50 block sm:hidden hamburger"
+          <Burger
+            opened={openMenu}
+            color="#fff"
+            className="z-50 block sm:hidden"
             onClick={() => {
               console.log("clicked burger from closed menu");
               setOpenMenu(!openMenu);
             }}
-          >
-            <Burger opened={openMenu} color="#fff" />
-          </button>
+          />
           {/* Tablet/Desktop */}
           <ul className="items-center justify-between hidden gap-6 sm:flex">
             <li className="text-sm text-white transition duration-1000 hover:duration-1000 hover:underline hover:underline-offset-4">
@@ -89,15 +89,15 @@ const Header = () => {
           <div className="fixed inset-0 z-40 p-4 bg-black bg-opacity-90">
             <div className="flex flex-col justify-start gap-12">
               <div className="flex items-center justify-between">
-                <button
+                <Burger
+                  opened={openMenu}
+                  color="#fff"
                   className="cursor-pointer hamburger"
                   onClick={() => {
                     console.log("clicked burger from open menu");
                     setOpenMenu(!openMenu);
                   }}
-                >
-                  <Burger opened={openMenu} color="#fff" />
-                </button>
+                />
                 <div>
                   <ConnectButton />
                 </div>

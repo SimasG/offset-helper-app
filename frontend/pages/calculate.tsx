@@ -35,10 +35,11 @@ const calculate = () => {
             }}
             className="flex flex-col items-center justify-center w-full gap-4 sm:flex-row"
           >
-            <button className="w-5/6 sm:w-fit px-6 py-4 font-bold text-center text-white rounded-md bg-[#21B6A8] drop-shadow-2xl hover:opacity-75 transition-all">
+            {/* #21B6A8 */}
+            <button className="w-5/6 px-6 py-4 text-xs font-bold text-center text-white uppercase transition-all bg-black rounded-md sm:w-fit drop-shadow-2xl hover:opacity-75">
               Blockchain Footprint
             </button>
-            <button className="w-5/6 sm:w-fit px-6 py-4 font-bold text-center text-[#21B6A8] rounded-md drop-shadow-2xl bg-white hover:opacity-75 transition-all">
+            <button className="w-5/6 px-6 py-4 text-xs font-bold text-center text-black uppercase transition-all bg-white rounded-md sm:w-fit drop-shadow-2xl hover:opacity-75">
               Real World Footprint
             </button>
           </div>

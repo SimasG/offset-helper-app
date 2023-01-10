@@ -98,6 +98,8 @@ const BlockchainCalculator = ({
           </div>
         </div>
 
+        <div></div>
+
         {/* Calculate Button */}
         <div className="font-bold text-center">
           <button
