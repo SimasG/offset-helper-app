@@ -1,5 +1,6 @@
 /* Place to import a font */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -38,17 +39,6 @@ body {
 /* Grouped utilities */
 .font-fire-sans-serif {
   font-family: "Inter", serif;
-}
-
-.bar {
-  display: block;
-  width: 1.8rem;
-  height: 0.2rem;
-  margin: 0.3rem auto;
-  -webkit-transition: all 0.3s ease-in-out;
-  transition: all 0.3s ease-in-out;
-  /* Don't understand why it's background-color and not just color. */
-  background-color: #d1d5db;
 }
 
 /* Custom Mantine styling */
