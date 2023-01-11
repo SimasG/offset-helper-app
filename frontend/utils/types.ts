@@ -1,4 +1,5 @@
 import { BigNumber } from "ethers";
+import { Dispatch, SetStateAction } from "react";
 
 export type offsetMethodsProps = {
   label: string;
@@ -59,7 +60,7 @@ export type emissionsFactorItem = {
   emissionsFactor: string;
 };
 
-export type tx = {
+export type txResponse = {
   status: string;
   message: string;
   result: txResult[];
@@ -86,4 +87,10 @@ export type txResult = {
   confirmations: string;
   methodId: string;
   functionName: string;
+};
+
+export type BlockchainCalculatorProps = {
+  setOpenBlockchainCalculator: Dispatch<SetStateAction<boolean>>;
+  openBlockchainCalculator: boolean;
+  loading: boolean;
 };

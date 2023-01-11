@@ -4,11 +4,12 @@ import { calculateEmissionsFactor } from "../../utils/calculator/calculateEmissi
 import { emissionsFactorItem } from "../../utils/types";
 
 /* Hitting this endpoint processes `GasUsed.csv` & `Hashrate.csv` 
-and generates `emissionsFactors.json`
+  and generates `emissionsFactors.json` that we'll be
+  using to calculate total emissions of an address.
 **/
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
-    // importing CSV locally from http://localhost:3000/..
+    // importing CSVs locally from http://localhost:3000/..
     const [gasUsedCSV, hashrateCSV] = await Promise.all([
       fetch(`${process.env.NEXT_PUBLIC_APP_URL}/GasUsed.csv`).then((res) =>
         res.text()
@@ -37,14 +38,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
       let obj: emissionsFactorItem = {
         "Date(UTC)": gasUsedObj[i][0],
-        UnixTimeStamp: gasUsedObj[i][0],
+        UnixTimeStamp: gasUsedObj[i][1],
         emissionsFactor: emissionsFactor.toString(),
       };
 
       arr.push(obj);
     }
-
-    console.log("arr:", arr);
 
     // caching the response (emissionsFactors.json) for 24 hours
     res.setHeader(

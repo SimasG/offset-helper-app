@@ -18,7 +18,7 @@ import handleOffset from "../utils/offset";
 import Icon from "./Icon";
 import { ContractTransaction } from "ethers";
 
-const Form = () => {
+const OffsetForm = () => {
   const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
     { label: "BCT", value: "bct", image: "/bct.png" },
     { label: "NCT", value: "nct", image: "/nct.png" },
@@ -448,4 +448,4 @@ const Form = () => {
   );
 };
 
-export default Form;
+export default OffsetForm;

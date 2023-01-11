@@ -67,7 +67,6 @@ const Header = () => {
             color="#fff"
             className="z-50 block sm:hidden"
             onClick={() => {
-              console.log("clicked burger from closed menu");
               setOpenMenu(!openMenu);
             }}
           />
@@ -94,7 +93,6 @@ const Header = () => {
                   color="#fff"
                   className="cursor-pointer hamburger"
                   onClick={() => {
-                    console.log("clicked burger from open menu");
                     setOpenMenu(!openMenu);
                   }}
                 />

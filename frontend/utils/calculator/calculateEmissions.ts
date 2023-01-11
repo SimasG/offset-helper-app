@@ -1,5 +1,4 @@
-import { getTransactions } from "./getTransactions";
-import { emissionsFactorItem, tx, txResult } from "../types";
+import { emissionsFactorItem, txResponse, txResult } from "../types";
 
 let emissionsFactorsObj: emissionsFactorItem[] = [];
 
@@ -10,8 +9,6 @@ const fetchEmissionsFactors = () => {
     ).then((res) => {
       return res.json();
     });
-
-    console.log("emissionsFactorsObj:", emissionsFactorsObj);
   };
   asyncWrapper();
 };
@@ -50,9 +47,8 @@ const getEmissionsFactors = (timestamp: string) => {
 };
 
 // calculating total address emissions
-export const calculateEmissions = async (addr: string) => {
-  const transactions: tx = await getTransactions(addr);
-
+export const calculateEmissions = async (addr: string, transactions: any) => {
+  console.log("zdare");
   let txEmissions = 0;
   let totalEmissions = 0;
 
@@ -67,14 +63,10 @@ export const calculateEmissions = async (addr: string) => {
   for (let i = 0; i < timestamps.length; i++) {
     txEmissions =
       parseFloat(emissionsFactors[i]) *
-      parseInt(transactions.result[i].gasUsed);
+      parseInt(transactions.result[i]?.gasUsed);
 
     totalEmissions += txEmissions;
   }
   const totalEmissionsKg = totalEmissions / 1000;
   return totalEmissionsKg;
 };
-
-// 0x619353127678b95C023530df08BCB638870cFDdA -> mine
-// 0xF417ACe7b13c0ef4fcb5548390a450A4B75D3eB3 -> woj.eth
-// 0x6B3595068778DD592e39A122f4f5a5cF09C90fE2 -> sushi

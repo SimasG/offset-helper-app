@@ -1,19 +1,17 @@
 import { TextInput } from "@mantine/core";
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
-
-type BlockchainCalculatorProps = {
-  setOpenBlockchainCalculator: Dispatch<SetStateAction<boolean>>;
-  openBlockchainCalculator: boolean;
-  loading: boolean;
-};
+import { useRouter } from "next/router";
+import { BlockchainCalculatorProps } from "../utils/types";
 
 const BlockchainCalculator = ({
   setOpenBlockchainCalculator,
   openBlockchainCalculator,
   loading,
 }: BlockchainCalculatorProps) => {
+  const router = useRouter();
+
   const form = useForm({
     initialValues: {
       address: "",
@@ -35,42 +33,8 @@ const BlockchainCalculator = ({
    * @param values form values object
    */
   const handleSubmit = async (values: typeof form.values) => {
-    // ** `calculateEmissions` func goes here
-    // setLoading(true);
-    // try {
-    //   if (isConnected) {
-    //     {
-    //       toast.promise(
-    //         handleOffset({
-    //           paymentMethod: values.paymentMethod,
-    //           offsetMethod: values.offsetMethod,
-    //           amountToOffset: values.amountToOffset,
-    //           estimate: estimate,
-    //         }),
-    //         {
-    //           loading: "Offsetting...",
-    //           success: (tx) => offsetSuccess(tx),
-    //           error: (err) => `Error offsetting. Check console for details.`,
-    //         },
-    //         {
-    //           style: {
-    //             minWidth: "250px",
-    //             maxWidth: "750px",
-    //           },
-    //           success: {
-    //             duration: 10000,
-    //             icon: "💚",
-    //           },
-    //         }
-    //       );
-    //       setLoading(false);
-    //     }
-    //   } else {
-    //     toast.error("Connect to a Wallet first!");
-    //   }
-    // } catch {
-    //   setLoading(false);
-    // }
+    router.query.address = values.address;
+    router.push(`/calculate/${router.query.address}`);
   };
 
   return (

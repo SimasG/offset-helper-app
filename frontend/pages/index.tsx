@@ -1,15 +1,10 @@
 import type { NextPage } from "next";
 import Header from "../components/Header";
 import Head from "next/head";
-import Form from "../components/Form";
+import OffsetForm from "../components/OffsetForm";
 import Footer from "../components/Footer";
-// import { calculateEmissions } from "../utils/calculator/calculateEmissions";
 
-type HomeProps = {
-  emissions: number;
-};
-
-const Home = ({ emissions }: HomeProps) => {
+const Home = () => {
   return (
     <div>
       <Head>
@@ -34,7 +29,7 @@ const Home = ({ emissions }: HomeProps) => {
             </div>
           </div>
         </div>
-        <Form />
+        <OffsetForm />
       </section>
       <Footer />
     </div>
@@ -42,11 +37,3 @@ const Home = ({ emissions }: HomeProps) => {
 };
 
 export default Home;
-
-// Home.getInitialProps = async () => {
-//   const emissions = await calculateEmissions(
-//     "0x619353127678b95C023530df08BCB638870cFDdA"
-//   );
-//   console.log("emissions:", emissions);
-//   return { emissions };
-// };
