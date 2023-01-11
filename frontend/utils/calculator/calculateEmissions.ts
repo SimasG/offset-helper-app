@@ -1,13 +1,22 @@
-import fs from "fs-extra";
 import { getTransactions } from "./getTransactions";
 import { emissionsFactorItem, tx, txResult } from "../types";
 
-// accessing `emissionsFactors` json
-const emissionsFactorsJSON = fs.readFileSync("data/EmissionsFactors.json", {
-  encoding: "utf-8",
-});
-const emissionsFactorsObj: emissionsFactorItem[] =
-  JSON.parse(emissionsFactorsJSON);
+let emissionsFactorsObj: emissionsFactorItem[] = [];
+
+const fetchEmissionsFactors = () => {
+  const asyncWrapper = async () => {
+    emissionsFactorsObj = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/emissionsFactors`
+    ).then((res) => {
+      return res.json();
+    });
+
+    console.log("emissionsFactorsObj:", emissionsFactorsObj);
+  };
+  asyncWrapper();
+};
+
+fetchEmissionsFactors();
 
 // global variables
 let timestamp = "";
@@ -65,11 +74,6 @@ export const calculateEmissions = async (addr: string) => {
   const totalEmissionsKg = totalEmissions / 1000;
   return totalEmissionsKg;
 };
-
-const emissions = await calculateEmissions(
-  "0x619353127678b95C023530df08BCB638870cFDdA"
-);
-console.log("emissions:", emissions);
 
 // 0x619353127678b95C023530df08BCB638870cFDdA -> mine
 // 0xF417ACe7b13c0ef4fcb5548390a450A4B75D3eB3 -> woj.eth

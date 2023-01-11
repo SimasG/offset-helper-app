@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 /*
 Fetching array of historical transactions of a given address
 **/

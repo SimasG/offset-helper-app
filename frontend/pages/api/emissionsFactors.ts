@@ -19,31 +19,38 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     ]);
 
     // processing CSVs into `emissionsFactor.json`
-    const gasUsedJSON = Papa.parse(gasUsedCSV, {}).data as string[][];
-    const hashrateJSON = Papa.parse(hashrateCSV, {}).data as string[][];
+    const gasUsedObj = Papa.parse(gasUsedCSV, {}).data as string[][];
+    const hashrateObj = Papa.parse(hashrateCSV, {}).data as string[][];
 
     let arr: emissionsFactorItem[] = [];
 
     // creating daily entries of emissionsFactors
-    for (let i = 1; i < gasUsedJSON.length; i++) {
+    for (let i = 1; i < gasUsedObj.length; i++) {
       // if gasUsed is 0, emissionsFactor is also 0
       const emissionsFactor =
-        parseInt(gasUsedJSON[i][2]) == 0
+        parseInt(gasUsedObj[i][2]) == 0
           ? 0
           : calculateEmissionsFactor(
-              parseInt(gasUsedJSON[i][2]),
-              parseInt(hashrateJSON[i][2])
+              parseInt(gasUsedObj[i][2]),
+              parseInt(hashrateObj[i][2])
             );
 
       let obj: emissionsFactorItem = {
-        "Date(UTC)": gasUsedJSON[i][0],
-        UnixTimeStamp: gasUsedJSON[i][0],
+        "Date(UTC)": gasUsedObj[i][0],
+        UnixTimeStamp: gasUsedObj[i][0],
         emissionsFactor: emissionsFactor.toString(),
       };
 
       arr.push(obj);
     }
 
+    console.log("arr:", arr);
+
+    // caching the response (emissionsFactors.json) for 24 hours
+    res.setHeader(
+      "Cache-Control",
+      "Public, max-age=86400, stale-while-revalidate=60"
+    );
     res.status(200).json(arr);
   } else {
     res.status(405).end("Method not allowed");

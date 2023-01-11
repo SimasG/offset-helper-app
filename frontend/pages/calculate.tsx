@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "react-hot-toast";
 import Header from "../components/Header";
 import BlockchainCalculator from "../components/BlockchainCalculator";
+import { calculateEmissions } from "../utils/calculator/calculateEmissions";
 
 const calculate = () => {
   const [openBlockchainCalculator, setOpenBlockchainCalculator] =
@@ -19,6 +20,19 @@ const calculate = () => {
       <Header />
       {/* Hero */}
       <div className="flex flex-col items-center justify-center">
+        <div
+          onClick={() => {
+            const testFunction = async () => {
+              const emissions = await calculateEmissions(
+                "0x619353127678b95C023530df08BCB638870cFDdA"
+              );
+              console.log("emissions:", emissions);
+            };
+            testFunction();
+          }}
+        >
+          zdare
+        </div>
         <h1 className="mt-4 mb-6 text-6xl font-bold text-center text-white drop-shadow-2xl">
           Calculate Your
           <mark className="rounded bg-green-900 mx-4 px-1 py-0.5 text-green-300 leading-[70px]">
