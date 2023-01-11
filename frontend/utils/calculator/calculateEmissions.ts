@@ -4,11 +4,11 @@ let emissionsFactorsObj: emissionsFactorItem[] = [];
 
 const fetchEmissionsFactors = () => {
   const asyncWrapper = async () => {
-    emissionsFactorsObj = await fetch(
+    const res = await fetch(
       `${process.env.NEXT_PUBLIC_APP_URL}/api/emissionsFactors`
-    ).then((res) => {
-      return res.json();
-    });
+    );
+    emissionsFactorsObj = await res.json();
+    return emissionsFactorsObj;
   };
   asyncWrapper();
 };
@@ -48,7 +48,6 @@ const getEmissionsFactors = (timestamp: string) => {
 
 // calculating total address emissions
 export const calculateEmissions = async (addr: string, transactions: any) => {
-  console.log("zdare");
   let txEmissions = 0;
   let totalEmissions = 0;
 
@@ -68,5 +67,9 @@ export const calculateEmissions = async (addr: string, transactions: any) => {
     totalEmissions += txEmissions;
   }
   const totalEmissionsKg = totalEmissions / 1000;
+
+  // resetting timestamps & emissionsFactors
+  timestamps = [];
+  emissionsFactors = [];
   return totalEmissionsKg;
 };

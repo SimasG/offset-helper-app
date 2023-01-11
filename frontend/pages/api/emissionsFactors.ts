@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import { calculateEmissionsFactor } from "../../utils/calculator/calculateEmissionsFactor";
 import { emissionsFactorItem } from "../../utils/types";
 
-/* Hitting this endpoint processes `GasUsed.csv` & `Hashrate.csv` 
+/* This endpoint processes `GasUsed.csv` & `Hashrate.csv` 
   and generates `emissionsFactors.json` that we'll be
   using to calculate total emissions of an address.
 **/

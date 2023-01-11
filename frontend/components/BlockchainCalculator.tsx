@@ -9,6 +9,7 @@ const BlockchainCalculator = ({
   setOpenBlockchainCalculator,
   openBlockchainCalculator,
   loading,
+  setLoading,
 }: BlockchainCalculatorProps) => {
   const router = useRouter();
 
@@ -33,8 +34,20 @@ const BlockchainCalculator = ({
    * @param values form values object
    */
   const handleSubmit = async (values: typeof form.values) => {
-    router.query.address = values.address;
-    router.push(`/calculate/${router.query.address}`);
+    // setLoading(true);
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/emissions`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      }
+    );
+    const emissions = await response.json();
+    console.log("emissions:", emissions);
+    return emissions;
   };
 
   return (

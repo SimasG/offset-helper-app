@@ -1,1 +1,62 @@
-Top-level 'await' expressions are only allowed when the 'module' option is set to 'es2022', 'esnext', 'system', 'node16', or 'nodenext', and the 'target' option is set to 'es2017' or higher.
+txEmissions: 4669.929199128804
+txEmissions: 11227.040372043002
+txEmissions: 52553.250131311615
+txEmissions: 10847.746251766595
+txEmissions: 65905.67965043298
+txEmissions: 29910.959870380004
+txEmissions: 5469.330227399841
+txEmissions: 5469.330227399841
+txEmissions: 5469.330227399841
+
+---
+
+txEmissions: 4669.929199128804
+txEmissions: 11227.040372043002
+txEmissions: 52553.250131311615
+txEmissions: 10847.746251766595
+txEmissions: 65905.67965043298
+txEmissions: 29910.959870380004
+txEmissions: 5469.330227399841
+txEmissions: 5469.330227399841
+txEmissions: 5469.330227399841
+txEmissions: 51876.019697312775
+txEmissions: 81836.01632849408
+txEmissions: 4834.875067937475
+txEmissions: 4923.653387665042
+txEmissions: 43264.61123678298
+txEmissions: 4923.653387665042
+txEmissions: 15707.6559687958
+txEmissions: 128491.75636519409
+txEmissions: 5469.330227399841
+
+---
+
+txEmissions: 4669.929199128804
+txEmissions: 11227.040372043002
+txEmissions: 52553.250131311615
+txEmissions: 10847.746251766595
+txEmissions: 65905.67965043298
+txEmissions: 29910.959870380004
+txEmissions: 5469.330227399841
+txEmissions: 5469.330227399841
+txEmissions: 5469.330227399841
+txEmissions: 51876.019697312775
+txEmissions: 81836.01632849408
+txEmissions: 4834.875067937475
+txEmissions: 4923.653387665042
+txEmissions: 43264.61123678298
+txEmissions: 4923.653387665042
+txEmissions: 15707.6559687958
+txEmissions: 128491.75636519409
+txEmissions: 5469.330227399841
+txEmissions: 4669.929199128804
+txEmissions: 4834.875067937475
+txEmissions: NaN
+txEmissions: NaN
+txEmissions: NaN
+txEmissions: NaN
+txEmissions: NaN
+txEmissions: NaN
+txEmissions: NaN
+
+---

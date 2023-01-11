@@ -58,6 +58,7 @@ const CalculatePage = () => {
             setOpenBlockchainCalculator={setOpenBlockchainCalculator}
             openBlockchainCalculator={openBlockchainCalculator}
             loading={loading}
+            setLoading={setLoading}
           />
         </>
       )}

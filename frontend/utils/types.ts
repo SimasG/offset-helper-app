@@ -93,4 +93,5 @@ export type BlockchainCalculatorProps = {
   setOpenBlockchainCalculator: Dispatch<SetStateAction<boolean>>;
   openBlockchainCalculator: boolean;
   loading: boolean;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 };
