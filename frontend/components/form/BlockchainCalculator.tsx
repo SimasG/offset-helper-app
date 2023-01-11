@@ -1,4 +1,4 @@
-import { TextInput, Tooltip } from "@mantine/core";
+import { Button, TextInput, Tooltip } from "@mantine/core";
 import React, { useState } from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
@@ -62,7 +62,7 @@ const BlockchainCalculator = ({
         onSubmit={form.onSubmit(handleSubmit)}
         className="w-5/6 bg-white rounded sm:w-3/5 md:w-2/4 lg:w-5/12"
       >
-        <div className="p-8">
+        <div className="px-8 pt-8 pb-6">
           {/* Input Container */}
           <div className="flex flex-col gap-4">
             {/* Amount to Offset */}
@@ -70,8 +70,17 @@ const BlockchainCalculator = ({
               label={
                 <div className="flex justify-between gap-[1px]">
                   <h3 className="text-base">Ethereum Address</h3>
-                  <Tooltip label="zdare">
-                    <AiOutlineInfoCircle className="w-[10px] h-[10px]" />
+                  <Tooltip
+                    label={
+                      <div className="text-xs">
+                        At the moment, only Ethereum addresses are supported.
+                      </div>
+                    }
+                    radius="xs"
+                  >
+                    <div>
+                      <AiOutlineInfoCircle className="w-[10px] h-[10px]" />
+                    </div>
                   </Tooltip>
                 </div>
               }
@@ -86,9 +95,35 @@ const BlockchainCalculator = ({
 
         {emissions && (
           <div className="px-8 pb-4">
-            <div>
-              Total Emissions: <span>{(emissions / 1000).toFixed(2)}t</span> or{" "}
-              <span>{emissions.toFixed(2)}kg</span>
+            <div className="pb-4 italic">
+              Total Emissions:{" "}
+              <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
+                {(emissions / 1000).toFixed(2)}t
+              </mark>{" "}
+              or{" "}
+              <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
+                {emissions.toFixed(2)}kg
+              </mark>
+            </div>
+            <div className="pb-4">
+              Previously offset emissions:{" "}
+              <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
+                {0}t
+              </mark>{" "}
+            </div>
+            <div className="flex justify-center pb-6">
+              {/* className="px-6 py-4 text-xs font-bold text-center text-white uppercase transition-all bg-green-400 rounded-md drop-shadow-2xl hover:opacity-75" */}
+              <button className="btn-grad">Offset Your Emissions 🌱</button>
+            </div>
+            <div className="text-xs text-gray-500">
+              The calculator is built using{" "}
+              <a
+                href="https://kylemcdonald.github.io/ethereum-emissions/"
+                className="underline"
+              >
+                Kyle McDonald's
+              </a>{" "}
+              Ethereum carbon footprint calculation methodology. Thank you!
             </div>
           </div>
         )}
