@@ -1,4 +1,3 @@
-import type { NextPage } from "next";
 import Header from "../components/Header";
 import Head from "next/head";
 import OffsetForm from "../components/form/OffsetForm";
