@@ -1,16 +1,7 @@
 import Head from "next/head";
 import { useState } from "react";
-import { toast } from "react-hot-toast";
 import Header from "../../components/Header";
-import BlockchainCalculator from "../../components/BlockchainCalculator";
-
-// `getServerSideProps` will run on each request to this URL (../calculate)
-// export async function getServerSideProps(context: any) {
-//   console.log("context.params:", context.params);
-//   return {
-//     props: {},
-//   };
-// }
+import BlockchainCalculator from "../../components/form/BlockchainCalculator";
 
 const CalculatePage = () => {
   const [openBlockchainCalculator, setOpenBlockchainCalculator] =

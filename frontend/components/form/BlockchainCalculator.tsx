@@ -1,9 +1,9 @@
-import { TextInput } from "@mantine/core";
-import React from "react";
+import { TextInput, Tooltip } from "@mantine/core";
+import React, { useState } from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
-import { useRouter } from "next/router";
-import { BlockchainCalculatorProps } from "../utils/types";
+import { BlockchainCalculatorProps } from "../../utils/types";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 
 const BlockchainCalculator = ({
   setOpenBlockchainCalculator,
@@ -11,7 +11,7 @@ const BlockchainCalculator = ({
   loading,
   setLoading,
 }: BlockchainCalculatorProps) => {
-  const router = useRouter();
+  const [emissions, setEmissions] = useState<number>();
 
   const form = useForm({
     initialValues: {
@@ -34,7 +34,7 @@ const BlockchainCalculator = ({
    * @param values form values object
    */
   const handleSubmit = async (values: typeof form.values) => {
-    // setLoading(true);
+    setLoading(true);
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_APP_URL}/api/emissions`,
       {
@@ -45,9 +45,9 @@ const BlockchainCalculator = ({
         body: JSON.stringify(values),
       }
     );
-    const emissions = await response.json();
-    console.log("emissions:", emissions);
-    return emissions;
+    const emissions = (await response.json()).emissions;
+    setEmissions(emissions);
+    setLoading(false);
   };
 
   return (
@@ -67,7 +67,14 @@ const BlockchainCalculator = ({
           <div className="flex flex-col gap-4">
             {/* Amount to Offset */}
             <TextInput
-              label="Address"
+              label={
+                <div className="flex justify-between gap-[1px]">
+                  <h3 className="text-base">Ethereum Address</h3>
+                  <Tooltip label="zdare">
+                    <AiOutlineInfoCircle className="w-[10px] h-[10px]" />
+                  </Tooltip>
+                </div>
+              }
               // ** not sure if I need these props here
               {...form.getInputProps("address")}
               disabled={loading}
@@ -75,7 +82,16 @@ const BlockchainCalculator = ({
           </div>
         </div>
 
-        <div></div>
+        {loading && <div className="px-8">Loading...</div>}
+
+        {emissions && (
+          <div className="px-8 pb-4">
+            <div>
+              Total Emissions: <span>{(emissions / 1000).toFixed(2)}t</span> or{" "}
+              <span>{emissions.toFixed(2)}kg</span>
+            </div>
+          </div>
+        )}
 
         {/* Calculate Button */}
         <div className="font-bold text-center">

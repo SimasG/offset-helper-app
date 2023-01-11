@@ -16,7 +16,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const transactions: txResponse = await response.json();
 
     const emissions = await calculateEmissions(address, transactions);
-    // console.log({ emissions: emissions });
+
     res.status(200).json({ emissions: emissions });
   } else {
     res.status(405).end("Method not allowed");

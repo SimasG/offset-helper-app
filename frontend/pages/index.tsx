@@ -1,7 +1,7 @@
 import type { NextPage } from "next";
 import Header from "../components/Header";
 import Head from "next/head";
-import OffsetForm from "../components/OffsetForm";
+import OffsetForm from "../components/form/OffsetForm";
 import Footer from "../components/Footer";
 
 const Home = () => {

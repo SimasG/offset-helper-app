@@ -4,19 +4,18 @@ import { useForm } from "@mantine/form";
 import { showNotification } from "@mantine/notifications";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import handleEstimate from "../utils/getEstimates";
+import handleEstimate from "../../utils/getEstimates";
 import { BigNumber } from "ethers";
-import { ETHDenominator, USDCDenominator } from "../constants/constants";
-import SelectItem from "./SelectItem";
-import { paymentMethods } from "../utils/paymentMethods";
+import { ETHDenominator, USDCDenominator } from "../../constants/constants";
+import SelectItem from "../SelectItem";
+import { paymentMethods } from "../../utils/paymentMethods";
 import {
   carbonTokensProps,
   offsetMethodsProps,
   transactionProps,
-} from "../utils/types";
-import handleOffset from "../utils/offset";
-import Icon from "./Icon";
-import { ContractTransaction } from "ethers";
+} from "../../utils/types";
+import handleOffset from "../../utils/offset";
+import Icon from "../Icon";
 
 const OffsetForm = () => {
   const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
