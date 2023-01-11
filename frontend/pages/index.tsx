@@ -5,7 +5,7 @@ import Footer from "../components/Footer";
 
 const Home = () => {
   return (
-    <div>
+    <div className="relative min-h-screen">
       <Head>
         <title>Offset Helper</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />

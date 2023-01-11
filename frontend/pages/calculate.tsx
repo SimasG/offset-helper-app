@@ -1,7 +1,9 @@
 import Head from "next/head";
 import { useState } from "react";
-import Header from "../../components/Header";
-import BlockchainCalculator from "../../components/form/BlockchainCalculator";
+import Header from "../components/Header";
+import BlockchainCalculator from "../components/form/BlockchainCalculator";
+import Footer from "../components/Footer";
+import { Tooltip } from "@mantine/core";
 
 const CalculatePage = () => {
   const [openBlockchainCalculator, setOpenBlockchainCalculator] =
@@ -9,7 +11,7 @@ const CalculatePage = () => {
   const [loading, setLoading] = useState(false);
 
   return (
-    <div>
+    <div className="relative min-h-screen">
       <Head>
         <title>Offset Helper Carbon Footprint Calculator</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
@@ -27,19 +29,24 @@ const CalculatePage = () => {
           Easily estimate your emissions. Both on-chain and in real world.
         </p>
         {!openBlockchainCalculator && (
-          <div
-            onClick={() => {
-              setOpenBlockchainCalculator(!openBlockchainCalculator);
-            }}
-            className="flex flex-col items-center justify-center w-full gap-4 sm:flex-row"
-          >
+          <div className="flex flex-col items-center justify-center w-full gap-4 sm:flex-row">
             {/* #21B6A8 */}
-            <button className="w-5/6 px-6 py-4 text-xs font-bold text-center text-white uppercase transition-all bg-black rounded-md sm:w-fit drop-shadow-2xl hover:opacity-75">
+            <button
+              onClick={() => {
+                setOpenBlockchainCalculator(!openBlockchainCalculator);
+              }}
+              className="w-5/6 px-6 py-4 text-xs font-bold text-center text-white uppercase transition-all bg-black rounded-md sm:w-fit drop-shadow-2xl hover:opacity-75"
+            >
               Blockchain Footprint
             </button>
-            <button className="w-5/6 px-6 py-4 text-xs font-bold text-center text-black uppercase transition-all bg-white rounded-md sm:w-fit drop-shadow-2xl hover:opacity-75">
-              Real World Footprint
-            </button>
+            <Tooltip
+              label={<div className="text-xs">Work in Progress!👷‍♂️</div>}
+              radius="xs"
+            >
+              <button className="w-5/6 px-6 py-4 text-xs font-bold text-center text-black uppercase transition-all bg-white rounded-md sm:w-fit drop-shadow-2xl hover:opacity-75">
+                Real World Footprint
+              </button>
+            </Tooltip>
           </div>
         )}
       </div>
@@ -53,6 +60,7 @@ const CalculatePage = () => {
           />
         </>
       )}
+      <Footer />
     </div>
   );
 };

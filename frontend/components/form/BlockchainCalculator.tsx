@@ -1,4 +1,4 @@
-import { Button, TextInput, Tooltip } from "@mantine/core";
+import { Button, Loader, TextInput, Tooltip } from "@mantine/core";
 import React, { useState } from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
@@ -36,7 +36,7 @@ const BlockchainCalculator = ({
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/emissions`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/calculate/emissions`,
       {
         method: "POST",
         headers: {
@@ -91,7 +91,11 @@ const BlockchainCalculator = ({
           </div>
         </div>
 
-        {loading && <div className="px-8">Loading...</div>}
+        {loading && (
+          <div className="flex justify-center w-full px-8 py-4">
+            <Loader />
+          </div>
+        )}
 
         {emissions && (
           <div className="px-8 pb-4">

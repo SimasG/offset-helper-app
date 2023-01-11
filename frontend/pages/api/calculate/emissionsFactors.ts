@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Papa from "papaparse";
-import { calculateEmissionsFactor } from "../../utils/calculator/calculateEmissionsFactor";
-import { emissionsFactorItem } from "../../utils/types";
+import { calculateEmissionsFactor } from "../../../utils/calculator/calculateEmissionsFactor";
+import { emissionsFactorItem } from "../../../utils/types";
 
 /* This endpoint processes `GasUsed.csv` & `Hashrate.csv` 
   and generates `emissionsFactors.json` that we'll be

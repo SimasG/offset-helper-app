@@ -1,6 +1,6 @@
 import { NextApiResponse, NextApiRequest } from "next";
-import { calculateEmissions } from "../../utils/calculator/calculateEmissions";
-import { txResponse } from "../../utils/types";
+import { calculateEmissions } from "../../../utils/calculator/calculateEmissions";
+import { txResponse } from "../../../utils/types";
 
 /* This endpoint receives a POST request with Ethereum address
 and returns the emissions of the address

@@ -4,7 +4,7 @@ import React from "react";
 
 const Footer = () => {
   return (
-    <div className="flex items-center justify-end gap-4">
+    <div className="absolute bottom-0 right-0 flex items-center justify-end gap-4 mt-8">
       <Link href="https://twitter.com/simmygrade">
         <Image
           src="/socials/twitter.png"
