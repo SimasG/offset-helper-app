@@ -272,7 +272,7 @@ const OffsetForm = ({
               estimate: estimate,
             }),
             {
-              loading: "Offsetting...",
+              loading: "Offsetting... Please wait.",
               success: (tx) => offsetSuccess(tx),
               error: (err) => `Error offsetting. Check console for details.`,
             },
