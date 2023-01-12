@@ -38,7 +38,7 @@ const BlockchainCalculator = ({
   const handleSubmit = async (values: typeof form.values) => {
     setLoading(true);
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/calculate/emissions`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/calculator/emissions`,
       {
         method: "POST",
         headers: {

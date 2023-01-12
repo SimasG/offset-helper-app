@@ -5,7 +5,7 @@ import BlockchainCalculator from "../components/form/BlockchainCalculator";
 import Footer from "../components/Footer";
 import { Tooltip } from "@mantine/core";
 
-const CalculatePage = () => {
+const CalculatorPage = () => {
   const [openBlockchainCalculator, setOpenBlockchainCalculator] =
     useState(false);
   const [loading, setLoading] = useState(false);
@@ -65,4 +65,4 @@ const CalculatePage = () => {
   );
 };
 
-export default CalculatePage;
+export default CalculatorPage;

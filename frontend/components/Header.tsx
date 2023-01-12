@@ -32,7 +32,7 @@ const Header = () => {
               <Link href="/">Home</Link>
             </li>
             <li className="text-sm text-white transition duration-1000 hover:duration-1000 hover:underline hover:underline-offset-4">
-              <Link href="/calculate">Calculator</Link>
+              <Link href="/calculator">Calculator</Link>
             </li>
           </ul>
           <div>
@@ -62,7 +62,7 @@ const Header = () => {
                     <Link href="/">Home</Link>
                   </li>
                   <li className="text-xl text-white transition duration-1000 hover:duration-1000 hover:underline hover:underline-offset-4">
-                    <Link href="/calculate">Calculate Emissions</Link>
+                    <Link href="/calculator">Calculate Emissions</Link>
                   </li>
                 </ul>
               </div>

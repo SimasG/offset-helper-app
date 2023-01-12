@@ -5,7 +5,7 @@ let emissionsFactorsObj: emissionsFactorItem[] = [];
 const fetchEmissionsFactors = () => {
   const asyncWrapper = async () => {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/calculate/emissionsFactors`
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/calculator/emissionsFactors`
     );
     emissionsFactorsObj = await res.json();
     return emissionsFactorsObj;
