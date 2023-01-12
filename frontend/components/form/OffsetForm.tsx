@@ -17,7 +17,12 @@ import {
 import handleOffset from "../../utils/offset";
 import Icon from "../Icon";
 
-const OffsetForm = () => {
+const OffsetForm = ({
+  paymentMethodCalc,
+  carbonTokenCalc,
+  offsetMethodCalc,
+  amountToOffsetCalc,
+}: any) => {
   const [carbonTokens, setCarbonTokens] = useState<carbonTokensProps[]>([
     { label: "BCT", value: "bct", image: "/bct.png" },
     { label: "NCT", value: "nct", image: "/nct.png" },
@@ -34,10 +39,10 @@ const OffsetForm = () => {
 
   const form = useForm({
     initialValues: {
-      paymentMethod: "",
-      carbonToken: "",
-      offsetMethod: "",
-      amountToOffset: undefined,
+      paymentMethod: paymentMethodCalc || "",
+      carbonToken: carbonTokenCalc || "",
+      offsetMethod: offsetMethodCalc || "",
+      amountToOffset: parseFloat(amountToOffsetCalc) || undefined,
     },
 
     validateInputOnChange: true,
@@ -90,6 +95,7 @@ const OffsetForm = () => {
 
   const formCompleted =
     form.values.carbonToken !== "" &&
+    // @ts-ignore
     (form.values.amountToOffset !== 0 || form.values.amountToOffset !== "") &&
     form.values.amountToOffset !== undefined;
 

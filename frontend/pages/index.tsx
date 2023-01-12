@@ -3,7 +3,20 @@ import Head from "next/head";
 import OffsetForm from "../components/form/OffsetForm";
 import Footer from "../components/Footer";
 
-const Home = () => {
+export async function getServerSideProps({ query }: any) {
+  return {
+    props: { query },
+  };
+}
+
+const Home = ({ query }: any) => {
+  const {
+    paymentMethodCalc,
+    carbonTokenCalc,
+    offsetMethodCalc,
+    amountToOffsetCalc,
+  } = query;
+
   return (
     <div className="relative min-h-screen">
       <Head>
@@ -28,7 +41,12 @@ const Home = () => {
             </div>
           </div>
         </div>
-        <OffsetForm />
+        <OffsetForm
+          paymentMethodCalc={paymentMethodCalc}
+          carbonTokenCalc={carbonTokenCalc}
+          offsetMethodCalc={offsetMethodCalc}
+          amountToOffsetCalc={amountToOffsetCalc}
+        />
       </section>
       <Footer />
     </div>

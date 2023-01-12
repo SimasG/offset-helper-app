@@ -11,7 +11,7 @@ const CalculatePage = () => {
   const [loading, setLoading] = useState(false);
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen pb-8">
       <Head>
         <title>Offset Helper Carbon Footprint Calculator</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />

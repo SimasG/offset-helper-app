@@ -8,6 +8,7 @@ and returns the emissions of the address
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const { address } = req.body;
+    console.log("address:", address);
 
     // fetching address transactions
     const response = await fetch(

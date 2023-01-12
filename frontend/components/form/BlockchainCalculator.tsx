@@ -4,6 +4,7 @@ import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
 import { BlockchainCalculatorProps } from "../../utils/types";
 import { AiOutlineInfoCircle } from "react-icons/ai";
+import { useRouter } from "next/router";
 
 const BlockchainCalculator = ({
   setOpenBlockchainCalculator,
@@ -12,6 +13,7 @@ const BlockchainCalculator = ({
   setLoading,
 }: BlockchainCalculatorProps) => {
   const [emissions, setEmissions] = useState<number>();
+  const router = useRouter();
 
   const form = useForm({
     initialValues: {
@@ -48,6 +50,24 @@ const BlockchainCalculator = ({
     const emissions = (await response.json()).emissions;
     setEmissions(emissions);
     setLoading(false);
+  };
+
+  const handleOffset = async () => {
+    // adding pre-set values in the offset form to offset
+    // the given Ethereum address
+    router.query.paymentMethodCalc = "usdc";
+    router.query.carbonTokenCalc = "nct";
+    router.query.offsetMethodCalc = "usdc";
+    router.query.amountToOffsetCalc = (emissions! / 1000)?.toString();
+    const {
+      paymentMethodCalc,
+      carbonTokenCalc,
+      offsetMethodCalc,
+      amountToOffsetCalc,
+    } = router.query;
+    router.push(
+      `/?paymentMethodCalc=${paymentMethodCalc}&carbonTokenCalc=${carbonTokenCalc}&offsetMethodCalc=${offsetMethodCalc}&amountToOffsetCalc=${amountToOffsetCalc}`
+    );
   };
 
   return (
@@ -99,7 +119,7 @@ const BlockchainCalculator = ({
 
         {emissions && (
           <div className="px-8 pb-4">
-            <div className="pb-4 italic">
+            <div className="pb-4 text-xl italic font-bold">
               Total Emissions:{" "}
               <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
                 {(emissions / 1000).toFixed(2)}t
@@ -117,7 +137,9 @@ const BlockchainCalculator = ({
             </div>
             <div className="flex justify-center pb-6">
               {/* className="px-6 py-4 text-xs font-bold text-center text-white uppercase transition-all bg-green-400 rounded-md drop-shadow-2xl hover:opacity-75" */}
-              <button className="btn-grad">Offset Your Emissions 🌱</button>
+              <button className="btn-grad" onClick={() => handleOffset()}>
+                Offset Your Emissions 🌱
+              </button>
             </div>
             <div className="text-xs text-gray-500">
               The calculator is built using{" "}

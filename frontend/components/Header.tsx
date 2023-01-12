@@ -6,50 +6,6 @@ import { useState } from "react";
 const Header = () => {
   const [openMenu, setOpenMenu] = useState(false);
 
-  // {
-  //   return openMenu ? (
-  //     <div className="fixed inset-0 z-50 p-4 bg-black bg-opacity-70">
-  //       <div className="flex items-center justify-between">
-  //         <div
-  //           className="text-2xl text-white cursor-pointer hamburger"
-  //           onClick={() => setOpenMenu(!openMenu)}
-  //         >
-  //           <span className="bar"></span>
-  //           <span className="bar"></span>
-  //           <span className="bar"></span>{" "}
-  //         </div>
-  //         <div>
-  //           <ConnectButton />
-  //         </div>
-  //       </div>
-  //     </div>
-  //   ) : (
-  //     <div className="flex items-center justify-between mb-12 sm:mb-24">
-  //       {/* Mobile */}
-  //       <button
-  //         className="block sm:hidden hamburger"
-  //         onClick={() => setOpenMenu(!openMenu)}
-  //       >
-  //         <span className="bar"></span>
-  //         <span className="bar"></span>
-  //         <span className="bar"></span>
-  //       </button>
-  //       {/* Tablet/Desktop */}
-  //       <ul className="items-center justify-between hidden gap-6 sm:flex">
-  //         <li className="text-sm text-white transition duration-1000 hover:duration-1000 hover:underline hover:underline-offset-4">
-  //           <Link href="/">Home</Link>
-  //         </li>
-  //         <li className="text-sm text-white transition duration-1000 hover:duration-1000 hover:underline hover:underline-offset-4">
-  //           <Link href="/calculate">Calculate Emissions</Link>
-  //         </li>
-  //       </ul>
-  //       <div>
-  //         <ConnectButton />
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   {
     return (
       <>
@@ -76,7 +32,7 @@ const Header = () => {
               <Link href="/">Home</Link>
             </li>
             <li className="text-sm text-white transition duration-1000 hover:duration-1000 hover:underline hover:underline-offset-4">
-              <Link href="/calculate">Calculate Emissions</Link>
+              <Link href="/calculate">Calculator</Link>
             </li>
           </ul>
           <div>
