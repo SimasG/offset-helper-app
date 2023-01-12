@@ -1,12 +1,24 @@
-import type { NextPage } from "next";
 import Header from "../components/Header";
 import Head from "next/head";
-import Form from "../components/Form";
+import OffsetForm from "../components/form/OffsetForm";
 import Footer from "../components/Footer";
 
-const Home: NextPage = () => {
+export async function getServerSideProps({ query }: any) {
+  return {
+    props: { query },
+  };
+}
+
+const Home = ({ query }: any) => {
+  const {
+    paymentMethodCalc,
+    carbonTokenCalc,
+    offsetMethodCalc,
+    amountToOffsetCalc,
+  } = query;
+
   return (
-    <div>
+    <div className="relative min-h-screen">
       <Head>
         <title>Offset Helper</title>
         <meta name="viewport" content="initial-scale=1.0, width=device-width" />
@@ -29,7 +41,12 @@ const Home: NextPage = () => {
             </div>
           </div>
         </div>
-        <Form />
+        <OffsetForm
+          paymentMethodCalc={paymentMethodCalc}
+          carbonTokenCalc={carbonTokenCalc}
+          offsetMethodCalc={offsetMethodCalc}
+          amountToOffsetCalc={amountToOffsetCalc}
+        />
       </section>
       <Footer />
     </div>
