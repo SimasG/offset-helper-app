@@ -11,10 +11,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
     // importing CSVs locally from http://localhost:3000/..
     const [gasUsedCSV, hashrateCSV] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/GasUsed.csv`).then((res) =>
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/data/GasUsed.csv`).then((res) =>
         res.text()
       ),
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/Hashrate.csv`).then((res) =>
+      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/data/Hashrate.csv`).then((res) =>
         res.text()
       ),
     ]);

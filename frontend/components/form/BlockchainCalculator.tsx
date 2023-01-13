@@ -120,7 +120,7 @@ const BlockchainCalculator = ({
         {emissions && (
           <div className="px-8 pb-4">
             <div className="pb-4 text-xl italic font-bold">
-              Total Emissions:{" "}
+              Total Carbon Emissions:{" "}
               <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
                 {(emissions / 1000).toFixed(2)}t
               </mark>{" "}
