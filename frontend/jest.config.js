@@ -1,22 +1,63 @@
+// * Source: https://blog.antoniolofiego.com/setting-up-a-nextjs-application-with-typescript-jit-tailwind-css-and-jestreact-testing-library
+// module.exports = {
+//   testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
+//   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+//   transform: {
+//     "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
+//   },
+//   // letting jest know that whenever it encounters a .css file import,
+//   // it should import `styleMock.js` instead
+//   moduleNameMapper: {
+//     "\\.(css|less|scss|sass)$": "<rootDir>/styles/__mocks__/styleMock.js",
+//   },
+// };
+// -----
+// -----
+// -----
 const nextJest = require("next/jest");
 
 const createJestConfig = nextJest({
-  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
+  // specifying jest.config.js directory location
   dir: "./",
 });
 
-// Add any custom config to be passed to Jest
-/** @type {import('jest').Config} */
 const customJestConfig = {
-  // Add more setup options before each test is run
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  // ** ?
+  moduleDirectories: ["node_modules", "<rootDir>/"],
+
+  // specifying jsdom environment to accommodate Next.js'
+  // server-side rendering (default: `node`)
+  testEnvironment: "jest-environment-jsdom",
+
+  // setting up path patterns where tests will be ignored (if there are any)
   testPathIgnorePatterns: ["<rootDir>/.next/", "<rootDir>/node_modules/"],
 
-  // if using TypeScript with a baseUrl set to the root directory then you need the below for alias' to work
-  moduleDirectories: ["node_modules", "<rootDir>/"],
-  testEnvironment: "jest-environment-jsdom",
-  // transform: {},
+  // A list of paths to modules that run some code to configure or set up the
+  // testing framework before each test file in the suite is executed.
+  // Code is ran after setting up the env but before test code itself.
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
+
+  // transforming jsx,ts,tsx files into js using `babel-jest`
+  transform: {
+    "\\.[jt]sx?$": "<rootDir>/node_modules/babel-jest",
+  },
+
+  // skipping the transformation of any files that match any of the
+  // patterns listed here
+  transformIgnorePatterns: ["node_modules/(?!variables/.*)"],
+
+  // letting jest know that whenever it encounters a .css file import,
+  // it should import `styleMock.js` instead
+  moduleNameMapper: {
+    "\\.(css|less|scss|sass)$": "<rootDir>/styles/__mocks__/styleMock.js",
+  },
+
+  // treating these files as ESM
+  extensionsToTreatAsEsm: [".ts", ".tsx", ".jsx"],
+
+  // A TypeScript preprocessor `ts-jest` with source map support for Jest
+  // that lets you use Jest to test projects written in TypeScript.
+  preset: "ts-jest",
 };
 
-// createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
 module.exports = createJestConfig(customJestConfig);
