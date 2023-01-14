@@ -1,6 +1,6 @@
 import React from "react";
 import HeaderTest from "../components/HeaderTest";
-import TestComponent from "../components/testComponent";
+import TestComponent from "../components/TestComponent";
 const TestPage = () => {
   return (
     <div>
