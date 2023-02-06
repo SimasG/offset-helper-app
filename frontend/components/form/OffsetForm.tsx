@@ -16,6 +16,8 @@ import {
 } from "../../utils/types";
 import handleOffset from "../../utils/offset";
 import Icon from "../Icon";
+import Link from "next/link";
+import Image from "next/image";
 
 const OffsetForm = ({
   paymentMethodCalc,
@@ -318,12 +320,12 @@ const OffsetForm = ({
 
   return (
     <>
-      <div className="flex items-center justify-center w-full h-full">
+      <div className="flex items-center justify-center w-full h`-full">
         <form
           onSubmit={form.onSubmit(handleSubmit, handleError)}
-          className="w-5/6 bg-white rounded-lg sm:w-4/5 lg:w-2/3"
+          className="w-5/6 rounded-lg sm:w-4/5 lg:w-2/3"
         >
-          <div className="p-8">
+          <div className="p-8 bg-white rounded-t-lg ">
             {/* Input Container */}
             <div className="flex flex-col gap-4">
               {/* Payment Method */}
@@ -446,6 +448,20 @@ const OffsetForm = ({
             >
               Offset
             </button>
+          </div>
+
+          {/* Toucan Mention */}
+          <div className="flex items-center justify-end gap-2 mt-1 bg-transparent">
+            <span className="text-sm text-gray-300 opacity-50">Built on</span>
+            <Link href="https://toucan.earth/">
+              <Image
+                src="/toucan-logo-full-OnDark-color.png"
+                alt="Toucan Protocol logo"
+                width={80}
+                height={16}
+                // className="transition ease-in-out cursor-pointer delay-50"
+              />
+            </Link>
           </div>
         </form>
       </div>
