@@ -16,7 +16,6 @@ const Home = ({ query }: any) => {
     offsetMethodCalc,
     amountToOffsetCalc,
   } = query;
-
   return (
     <div className="relative min-h-screen">
       <Head>

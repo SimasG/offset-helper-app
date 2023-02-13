@@ -216,9 +216,7 @@ const OffsetForm = ({
     }
   };
 
-  // ** Should the type be ethers' `ContractTransaction`?
   const offsetSuccess = (tx: transactionProps) => {
-    console.log("tx:", tx);
     return (
       <div className="flex flex-col w-full gap-2">
         <div>
@@ -451,15 +449,15 @@ const OffsetForm = ({
           </div>
 
           {/* Toucan Mention */}
-          <div className="flex items-center justify-end gap-2 mt-1 bg-transparent">
+          <div className="flex items-center justify-end gap-2 mt-2 bg-transparent">
             <span className="text-sm text-gray-300 opacity-50">Built on</span>
             <Link href="https://toucan.earth/">
               <Image
                 src="/toucan-logo-full-OnDark-color.png"
                 alt="Toucan Protocol logo"
-                width={80}
-                height={16}
-                // className="transition ease-in-out cursor-pointer delay-50"
+                width={70}
+                height={14}
+                className="transition ease-in-out cursor-pointer delay-50 hover:opacity-75"
               />
             </Link>
           </div>

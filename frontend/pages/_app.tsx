@@ -21,9 +21,8 @@ import Script from "next/script";
 const { chains, provider } = configureChains(
   [chain.polygon],
   [
-    // ** Add alchemyProvider once I launch the dapp
     publicProvider(),
-    // alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
+    alchemyProvider({ apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY! }),
   ]
 );
 

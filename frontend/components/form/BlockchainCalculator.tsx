@@ -1,4 +1,4 @@
-import { Button, Loader, TextInput, Tooltip } from "@mantine/core";
+import { Loader, TextInput, Tooltip } from "@mantine/core";
 import React, { useState } from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
@@ -104,7 +104,6 @@ const BlockchainCalculator = ({
                   </Tooltip>
                 </div>
               }
-              // ** not sure if I need these props here
               {...form.getInputProps("address")}
               disabled={loading}
             />
@@ -136,7 +135,6 @@ const BlockchainCalculator = ({
               </mark>{" "}
             </div>
             <div className="flex justify-center pb-6">
-              {/* className="px-6 py-4 text-xs font-bold text-center text-white uppercase transition-all bg-green-400 rounded-md drop-shadow-2xl hover:opacity-75" */}
               <button className="btn-grad" onClick={() => handleOffset()}>
                 Offset Your Emissions 🌱
               </button>

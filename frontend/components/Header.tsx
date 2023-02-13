@@ -9,7 +9,6 @@ const Header = () => {
   {
     return (
       <>
-        {/* pointer-events-none */}
         <div
           className={
             openMenu
@@ -39,7 +38,6 @@ const Header = () => {
             <ConnectButton />
           </div>
         </div>
-        {/* If mobile menu is opened */}
         {openMenu && (
           <div className="fixed inset-0 z-40 p-4 bg-black bg-opacity-90">
             <div className="flex flex-col justify-start gap-12">
