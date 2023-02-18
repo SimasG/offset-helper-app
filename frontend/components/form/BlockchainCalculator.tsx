@@ -56,7 +56,8 @@ const BlockchainCalculator = ({
     setEmissions(emissions);
 
     const addressRetirements: klimaRetirements = await klimaSubgraphQuery(
-      FETCH_ADDRESS_RETIREMENTS(values.address)
+      // "Polygon Bridged Carbon" subgraph only accepts lower cased addresses
+      FETCH_ADDRESS_RETIREMENTS(values.address.toLowerCase())
     );
 
     let totalPreviouslyRetiredEmissions = 0;
