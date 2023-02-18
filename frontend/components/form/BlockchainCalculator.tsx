@@ -5,6 +5,8 @@ import { useForm } from "@mantine/form";
 import { BlockchainCalculatorProps } from "../../utils/types";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useRouter } from "next/router";
+import { FETCH_ADDRESS_RETIREMENTS } from "../../queries/index";
+import { klimaSubgraphQuery } from "../../utils/klimaSubgraphQuery";
 
 const BlockchainCalculator = ({
   setOpenBlockchainCalculator,
@@ -13,6 +15,7 @@ const BlockchainCalculator = ({
   setLoading,
 }: BlockchainCalculatorProps) => {
   const [emissions, setEmissions] = useState<number>();
+  const [previousRetirements, setPreviousRetirements] = useState<number>();
   const router = useRouter();
 
   const form = useForm({
@@ -47,8 +50,21 @@ const BlockchainCalculator = ({
         body: JSON.stringify(values),
       }
     );
+
     const emissions = (await response.json()).emissions;
     setEmissions(emissions);
+
+    const addressRetirements = await klimaSubgraphQuery(
+      FETCH_ADDRESS_RETIREMENTS()
+    );
+
+    let total = 0;
+    addressRetirements.klimaRetires.forEach((retirement: any) => {
+      total += parseFloat(retirement.amount);
+    });
+
+    setPreviousRetirements(total);
+
     setLoading(false);
   };
 
@@ -129,9 +145,9 @@ const BlockchainCalculator = ({
               </mark>
             </div>
             <div className="pb-4">
-              Previously offset emissions:{" "}
+              Previously offset emissions:
               <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
-                {0}t
+                {previousRetirements?.toFixed(2)}t
               </mark>{" "}
             </div>
             <div className="flex justify-center pb-6">

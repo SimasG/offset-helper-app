@@ -461,6 +461,9 @@ const OffsetForm = ({
               />
             </Link>
           </div>
+
+          {/* Previously offset CC calculation test */}
+          <div></div>
         </form>
       </div>
     </>
