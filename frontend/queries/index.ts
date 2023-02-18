@@ -1,8 +1,8 @@
-export function FETCH_ADDRESS_RETIREMENTS() {
+export function FETCH_ADDRESS_RETIREMENTS(address: string) {
   // Creating a GraqhQL query
   return `query {
     klimaRetires(orderBy: timestamp, orderDirection: desc, where:{
-        beneficiaryAddress: "0x619353127678b95c023530df08bcb638870cfdda"
+        beneficiaryAddress: "${address}"
       }) {
         id
         transaction {

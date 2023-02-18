@@ -2,7 +2,6 @@ import axios from "axios";
 
 export async function klimaSubgraphQuery(query: string) {
   try {
-    // Replace YOUR-SUBGRAPH-URL with the url of your subgraph
     const SUBGRAPH_URL =
       "https://api.thegraph.com/subgraphs/name/klimadao/polygon-bridged-carbon";
     const response = await axios.post(SUBGRAPH_URL, {

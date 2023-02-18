@@ -95,3 +95,32 @@ export type BlockchainCalculatorProps = {
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
 };
+
+// Klima `Polygon Bridged Carbon` subgraph types
+export type klimaRetirements = {
+  klimaRetires: klimaRetiresProps;
+};
+
+export type klimaRetiresProps = {
+  id: string;
+  transaction: retireTx;
+  retiringAddress: string;
+  beneficiaryAddress: string;
+  beneficiary: string;
+  retirementMessage: string;
+  pool: string;
+  amount: string;
+  offset: offsetProps;
+}[];
+
+export type retireTx = {
+  id: string;
+};
+
+export type offsetProps = {
+  id: string;
+  vintage: string;
+  projectID: string;
+  name: string;
+  bridge: string;
+};

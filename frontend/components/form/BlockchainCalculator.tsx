@@ -2,7 +2,7 @@ import { Loader, TextInput, Tooltip } from "@mantine/core";
 import React, { useState } from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
-import { BlockchainCalculatorProps } from "../../utils/types";
+import { BlockchainCalculatorProps, klimaRetirements } from "../../utils/types";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useRouter } from "next/router";
 import { FETCH_ADDRESS_RETIREMENTS } from "../../queries/index";
@@ -15,7 +15,8 @@ const BlockchainCalculator = ({
   setLoading,
 }: BlockchainCalculatorProps) => {
   const [emissions, setEmissions] = useState<number>();
-  const [previousRetirements, setPreviousRetirements] = useState<number>();
+  const [previouslyRetiredEmissions, setPreviouslyRetiredEmissions] =
+    useState<number>();
   const router = useRouter();
 
   const form = useForm({
@@ -54,17 +55,16 @@ const BlockchainCalculator = ({
     const emissions = (await response.json()).emissions;
     setEmissions(emissions);
 
-    const addressRetirements = await klimaSubgraphQuery(
-      FETCH_ADDRESS_RETIREMENTS()
+    const addressRetirements: klimaRetirements = await klimaSubgraphQuery(
+      FETCH_ADDRESS_RETIREMENTS(values.address)
     );
 
-    let total = 0;
-    addressRetirements.klimaRetires.forEach((retirement: any) => {
-      total += parseFloat(retirement.amount);
+    let totalPreviouslyRetiredEmissions = 0;
+    addressRetirements.klimaRetires.forEach((retirement) => {
+      totalPreviouslyRetiredEmissions += parseFloat(retirement.amount);
     });
 
-    setPreviousRetirements(total);
-
+    setPreviouslyRetiredEmissions(totalPreviouslyRetiredEmissions);
     setLoading(false);
   };
 
@@ -139,15 +139,11 @@ const BlockchainCalculator = ({
               <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
                 {(emissions / 1000).toFixed(2)}t
               </mark>{" "}
-              or{" "}
-              <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
-                {emissions.toFixed(2)}kg
-              </mark>
             </div>
             <div className="pb-4">
-              Previously offset emissions:
+              Previously Offset Emissions:{" "}
               <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
-                {previousRetirements?.toFixed(2)}t
+                {previouslyRetiredEmissions?.toFixed(2)}t
               </mark>{" "}
             </div>
             <div className="flex justify-center pb-6">
