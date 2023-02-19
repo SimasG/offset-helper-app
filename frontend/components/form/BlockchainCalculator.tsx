@@ -2,10 +2,17 @@ import { Loader, TextInput, Tooltip } from "@mantine/core";
 import React, { useState } from "react";
 import { BiLeftArrowAlt } from "react-icons/bi";
 import { useForm } from "@mantine/form";
-import { BlockchainCalculatorProps, klimaRetirements } from "../../utils/types";
+import {
+  BlockchainCalculatorProps,
+  polygonRetirements,
+  ethereumRetirements,
+} from "../../utils/types";
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useRouter } from "next/router";
-import { FETCH_ADDRESS_RETIREMENTS } from "../../queries/index";
+import {
+  FETCH_ADDRESS_RETIREMENTS_ETHEREUM,
+  FETCH_ADDRESS_RETIREMENTS_POLYGON,
+} from "../../queries/index";
 import { klimaSubgraphQuery } from "../../utils/klimaSubgraphQuery";
 
 const BlockchainCalculator = ({
@@ -55,17 +62,34 @@ const BlockchainCalculator = ({
     const emissions = (await response.json()).emissions;
     setEmissions(emissions);
 
-    const addressRetirements: klimaRetirements = await klimaSubgraphQuery(
-      // "Polygon Bridged Carbon" subgraph only accepts lower cased addresses
-      FETCH_ADDRESS_RETIREMENTS(values.address.toLowerCase())
-    );
+    /* Total address retirements on Polygon (BCT/NCT), ETH Mainnet (MCO2) & Celo (BCT/NCT) */
+    let totalAddressRetirements = 0;
 
-    let totalPreviouslyRetiredEmissions = 0;
-    addressRetirements.klimaRetires.forEach((retirement) => {
-      totalPreviouslyRetiredEmissions += parseFloat(retirement.amount);
+    // Polygon
+    const addressRetirementsPolygon: polygonRetirements =
+      await klimaSubgraphQuery(
+        "https://api.thegraph.com/subgraphs/name/klimadao/polygon-bridged-carbon",
+        // "Polygon Bridged Carbon" subgraph only accepts lower cased addresses
+        FETCH_ADDRESS_RETIREMENTS_POLYGON(values.address.toLowerCase())
+      );
+
+    addressRetirementsPolygon.klimaRetires.forEach((retirement) => {
+      totalAddressRetirements += parseFloat(retirement.amount);
     });
 
-    setPreviouslyRetiredEmissions(totalPreviouslyRetiredEmissions);
+    // Ethereum
+    const addressRetirementsEthereum: ethereumRetirements =
+      await klimaSubgraphQuery(
+        "https://api.thegraph.com/subgraphs/name/klimadao/ethereum-bridged-carbon",
+        FETCH_ADDRESS_RETIREMENTS_ETHEREUM(values.address)
+      );
+
+    addressRetirementsEthereum.retires.forEach((retirement) => {
+      totalAddressRetirements += parseFloat(retirement.value);
+    });
+
+    setPreviouslyRetiredEmissions(totalAddressRetirements);
+
     setLoading(false);
   };
 
@@ -133,37 +157,44 @@ const BlockchainCalculator = ({
           </div>
         )}
 
-        {emissions && (
-          <div className="px-8 pb-4">
-            <div className="pb-4 text-xl italic font-bold">
-              Total Carbon Emissions:{" "}
-              <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
-                {(emissions / 1000).toFixed(2)}t
-              </mark>{" "}
+        {typeof emissions === "number" &&
+          typeof previouslyRetiredEmissions === "number" && (
+            <div className="px-8 pb-4">
+              <div className="pb-4 text-xl italic font-bold">
+                Total Emissions:{" "}
+                {emissions === 0 ? (
+                  <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
+                    0t
+                  </mark>
+                ) : (
+                  <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
+                    {(emissions / 1000).toFixed(2)}t
+                  </mark>
+                )}{" "}
+              </div>
+              <div className="pb-4">
+                Previously Offset Emissions:{" "}
+                <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
+                  {previouslyRetiredEmissions?.toFixed(2)}t
+                </mark>{" "}
+              </div>
+              <div className="flex justify-center pb-6">
+                <button className="btn-grad" onClick={() => handleOffset()}>
+                  Offset Your Emissions 🌱
+                </button>
+              </div>
+              <div className="text-xs text-gray-500">
+                The calculator is built using{" "}
+                <a
+                  href="https://kylemcdonald.github.io/ethereum-emissions/"
+                  className="underline"
+                >
+                  Kyle McDonald's
+                </a>{" "}
+                Ethereum carbon footprint calculation methodology. Thank you!
+              </div>
             </div>
-            <div className="pb-4">
-              Previously Offset Emissions:{" "}
-              <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
-                {previouslyRetiredEmissions?.toFixed(2)}t
-              </mark>{" "}
-            </div>
-            <div className="flex justify-center pb-6">
-              <button className="btn-grad" onClick={() => handleOffset()}>
-                Offset Your Emissions 🌱
-              </button>
-            </div>
-            <div className="text-xs text-gray-500">
-              The calculator is built using{" "}
-              <a
-                href="https://kylemcdonald.github.io/ethereum-emissions/"
-                className="underline"
-              >
-                Kyle McDonald's
-              </a>{" "}
-              Ethereum carbon footprint calculation methodology. Thank you!
-            </div>
-          </div>
-        )}
+          )}
 
         {/* Calculate Button */}
         <div className="font-bold text-center">
