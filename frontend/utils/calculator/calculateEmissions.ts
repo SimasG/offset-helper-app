@@ -47,7 +47,7 @@ const getEmissionsFactors = (timestamp: string) => {
 };
 
 // calculating total address emissions
-export const calculateEmissions = async (addr: string, transactions: any) => {
+export const calculateEmissions = async (transactions: any) => {
   let txEmissions = 0;
   let totalEmissions = 0;
 

@@ -88,6 +88,8 @@ const BlockchainCalculator = ({
       totalAddressRetirements += parseFloat(retirement.value);
     });
 
+    // Celo
+
     setPreviouslyRetiredEmissions(totalAddressRetirements);
 
     setLoading(false);

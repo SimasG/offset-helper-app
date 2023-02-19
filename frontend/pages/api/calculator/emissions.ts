@@ -10,26 +10,45 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { address } = req.body;
 
     // fetching address normal transactions
-    const response = await fetch(
+    const txResponse = await fetch(
       `https://api.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&page=1&offset=10000&sort=asc&apikey=${process.env.ETHERSCAN_API_KEY}`
     );
 
-    const transactions: txResponse = await response.json();
+    const transactions: txResponse = await txResponse.json();
 
     // fetching address token transfer transactions
-    // const response2 = await fetch(
-    //   `https://api.etherscan.io/api?module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&page=1&offset=10000&sort=asc&apikey=${process.env.ETHERSCAN_API_KEY}`
-    // );
+    const tokenTxResponse = await fetch(
+      `https://api.etherscan.io/api?module=account&action=tokentx&address=${address}&startblock=0&endblock=999999999&page=1&offset=10000&sort=asc&apikey=${process.env.ETHERSCAN_API_KEY}`
+    );
 
-    // const tokenTransferTxes = await response2.json();
+    const tokenTransferTransactions = await tokenTxResponse.json();
 
-    // const totalTransactions = transactions.result.concat(
-    //   tokenTransferTxes.result
-    // );
+    let filteredTokenTransferTransactions = tokenTransferTransactions;
 
-    const emissions = await calculateEmissions(address, transactions.result);
+    for (let i = 0; i < tokenTransferTransactions.result.length; i++) {
+      for (let j = 0; j < transactions.result.length; j++) {
+        if (
+          tokenTransferTransactions.result[i].hash ===
+          transactions.result[j].hash
+        ) {
+          filteredTokenTransferTransactions.result.splice(i, 1);
+          i--;
+        }
+      }
+    }
 
-    res.status(200).json({ emissions: emissions });
+    const totalTransactions = transactions.result.concat(
+      filteredTokenTransferTransactions.result
+    );
+
+    const txEmissions = await calculateEmissions(transactions.result);
+    const tokenTxEmissions = await calculateEmissions(
+      filteredTokenTransferTransactions.result
+    );
+
+    const totalEmissions = txEmissions + tokenTxEmissions;
+
+    res.status(200).json({ emissions: totalEmissions });
   } else {
     res.status(405).end("Method not allowed");
   }
