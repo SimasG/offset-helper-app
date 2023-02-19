@@ -51,8 +51,8 @@ export const calculateEmissions = async (addr: string, transactions: any) => {
   let txEmissions = 0;
   let totalEmissions = 0;
 
-  for (let i = 0; i < transactions.result.length; i++) {
-    getTimestamps(transactions.result[i]);
+  for (let i = 0; i < transactions.length; i++) {
+    getTimestamps(transactions[i]);
   }
 
   for (let i = 0; i < timestamps.length; i++) {
@@ -61,8 +61,7 @@ export const calculateEmissions = async (addr: string, transactions: any) => {
 
   for (let i = 0; i < timestamps.length; i++) {
     txEmissions =
-      parseFloat(emissionsFactors[i]) *
-      parseInt(transactions.result[i]?.gasUsed);
+      parseFloat(emissionsFactors[i]) * parseInt(transactions[i]?.gasUsed);
 
     totalEmissions += txEmissions;
   }

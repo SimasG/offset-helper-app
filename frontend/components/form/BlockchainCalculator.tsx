@@ -81,7 +81,7 @@ const BlockchainCalculator = ({
     const addressRetirementsEthereum: ethereumRetirements =
       await klimaSubgraphQuery(
         "https://api.thegraph.com/subgraphs/name/klimadao/ethereum-bridged-carbon",
-        FETCH_ADDRESS_RETIREMENTS_ETHEREUM(values.address)
+        FETCH_ADDRESS_RETIREMENTS_ETHEREUM(values.address.toLowerCase())
       );
 
     addressRetirementsEthereum.retires.forEach((retirement) => {
