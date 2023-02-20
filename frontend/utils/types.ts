@@ -95,3 +95,72 @@ export type BlockchainCalculatorProps = {
   loading: boolean;
   setLoading: Dispatch<SetStateAction<boolean>>;
 };
+
+// Klima `Polygon Bridged Carbon` subgraph types
+export type polygonRetirements = {
+  klimaRetires: klimaRetiresProps;
+};
+
+export type klimaRetiresProps = {
+  id: string;
+  transaction: retireTx;
+  retiringAddress: string;
+  beneficiaryAddress: string;
+  beneficiary: string;
+  retirementMessage: string;
+  pool: string;
+  amount: string;
+  offset: offsetProps;
+}[];
+
+export type retireTx = {
+  id: string;
+};
+
+export type offsetProps = {
+  id: string;
+  vintage: string;
+  projectID: string;
+  name: string;
+  bridge: string;
+};
+
+// Klima `Ethereum Bridged Carbon` subgraph types
+export type ethereumRetirements = {
+  retires: retire;
+};
+
+export type retire = {
+  id: string;
+  retiree: string;
+  timestamp: string;
+  value: string;
+  beneficiary: string;
+  offset: carbonOffset;
+}[];
+
+export type carbonOffset = {
+  id: string;
+  name: string;
+  tokenAddress: string;
+  bridge: string;
+  registry: string;
+  totalBridged: string;
+  totalRetired: string;
+  currentSupply: string;
+  vintage: string;
+  projectID: string;
+  standard: string;
+  methodology: string;
+  country: string;
+  region: string;
+  storageMethod: string;
+  method: string;
+  emissionType: string;
+  category: string;
+  isCorsiaCompliant: boolean;
+  coBenefits: string;
+  correspAdjustment: string;
+  additionalCertification: string;
+  klimaRanking: string;
+};
