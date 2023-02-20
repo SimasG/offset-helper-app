@@ -172,6 +172,11 @@ const BlockchainCalculator = ({
         {typeof emissions === "number" &&
           typeof previouslyRetiredEmissions === "number" && (
             <div className="px-8 pb-4">
+              {previouslyRetiredEmissions > emissions && (
+                <div className="pb-4">
+                  <p>🥳 More emissions offset than emitted! 🥳</p>
+                </div>
+              )}
               <div className="pb-4 text-xl italic font-bold">
                 Total Emissions:{" "}
                 {emissions === 0 ? (
@@ -180,7 +185,7 @@ const BlockchainCalculator = ({
                   </mark>
                 ) : (
                   <mark className="rounded bg-green-900 px-1 py-0.5 text-green-300">
-                    {(emissions / 1000).toFixed(2)}t
+                    {emissions.toFixed(2)}t
                   </mark>
                 )}{" "}
               </div>
