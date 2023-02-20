@@ -62,3 +62,41 @@ export function FETCH_ADDRESS_RETIREMENTS_ETHEREUM(address: string) {
     }
   }`;
 }
+
+// Address BCT/NCT retirements in Celo
+export function FETCH_ADDRESS_RETIREMENTS_CELO(address: string) {
+  return `query {
+    retires(where:{retiree: "${address}"}) {
+      id
+      retiree
+      timestamp
+      value
+      beneficiary
+      offset {
+        id
+        name
+        tokenAddress
+        bridge
+        registry
+        totalBridged
+        totalRetired
+        currentSupply
+        vintage
+        projectID
+        standard
+        methodology
+        country
+        region
+        storageMethod
+        method
+        emissionType
+        category
+        isCorsiaCompliant
+        coBenefits
+        correspAdjustment
+        additionalCertification
+        klimaRanking
+      }
+    }
+  }`;
+}

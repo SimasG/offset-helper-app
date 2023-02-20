@@ -10,6 +10,7 @@ import {
 import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useRouter } from "next/router";
 import {
+  FETCH_ADDRESS_RETIREMENTS_CELO,
   FETCH_ADDRESS_RETIREMENTS_ETHEREUM,
   FETCH_ADDRESS_RETIREMENTS_POLYGON,
 } from "../../queries/index";
@@ -89,6 +90,15 @@ const BlockchainCalculator = ({
     });
 
     // Celo
+    const addressRetirementsCelo: ethereumRetirements =
+      await klimaSubgraphQuery(
+        "https://api.thegraph.com/subgraphs/name/klimadao/celo-bridged-carbon",
+        FETCH_ADDRESS_RETIREMENTS_CELO(values.address.toLowerCase())
+      );
+
+    addressRetirementsCelo.retires.forEach((retirement) => {
+      totalAddressRetirements += parseFloat(retirement.value);
+    });
 
     setPreviouslyRetiredEmissions(totalAddressRetirements);
 

@@ -60,6 +60,7 @@ export const calculateEmissions = async (transactions: any) => {
   }
 
   for (let i = 0; i < timestamps.length; i++) {
+    console.log(transactions[i]?.hash);
     txEmissions =
       parseFloat(emissionsFactors[i]) * parseInt(transactions[i]?.gasUsed);
 
