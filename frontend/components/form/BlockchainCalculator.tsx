@@ -111,7 +111,7 @@ const BlockchainCalculator = ({
     router.query.paymentMethodCalc = "usdc";
     router.query.carbonTokenCalc = "nct";
     router.query.offsetMethodCalc = "usdc";
-    router.query.amountToOffsetCalc = (emissions! / 1000)?.toString();
+    router.query.amountToOffsetCalc = emissions?.toString();
     const {
       paymentMethodCalc,
       carbonTokenCalc,
